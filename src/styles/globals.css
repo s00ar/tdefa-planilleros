@@ -1,0 +1,118 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource/inter/latin.css";
+@import "@fontsource/manrope/latin.css";
+
+@tailwind base;
+
+@custom-variant dark (&:is(.dark *));
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 14px;
+
+    --background: 12 38% 98%;
+    --foreground: 210 10% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 10% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 10% 12%;
+
+    --primary: 0 100% 9%;
+    --primary-foreground: 0 0% 100%;
+    --primary-container: 0 100% 25%;
+
+    --secondary: 0 0% 94%;
+    --secondary-foreground: 0 100% 9%;
+
+    --muted: 220 12% 93%;
+    --muted-foreground: 20 7% 39%;
+
+    --accent: 14 54% 95%;
+    --accent-foreground: 0 100% 9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 20 10% 89%;
+    --input: 220 9% 88%;
+    --ring: 0 100% 25%;
+
+    --sidebar: 351 70% 12%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 351 73% 24%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-muted: 351 40% 20%;
+    --sidebar-muted-foreground: 0 0% 92%;
+    --sidebar-accent: 351 60% 18%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 351 45% 22%;
+    --sidebar-ring: 351 73% 24%;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply antialiased bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@layer utilities {
+  .tdefa-page {
+    @apply min-h-dvh bg-background;
+  }
+}
+
+@theme inline {
+  --font-heading: "Manrope", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-container: var(--primary-container);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}

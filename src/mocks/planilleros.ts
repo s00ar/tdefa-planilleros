@@ -1,0 +1,53 @@
+import type { Planillero } from "@/types/planillero";
+
+export const mockPlanilleros: Planillero[] = [
+  {
+    id: "u_plan_1",
+    name: "Planillero Demo",
+    username: "planillero",
+    email: "planillero@tdefa.local",
+    phone: "+54 11 5555-0001",
+    dni: "30.000.001",
+    status: "activo",
+    assignedMatchesCount: 24,
+    completedMatchesCount: 18,
+    createdAtIso: "2025-01-10",
+  },
+  {
+    id: "u_plan_2",
+    name: "Carlos Ruiz",
+    username: "carlos",
+    email: "carlos@tdefa.local",
+    phone: "+54 11 5555-0002",
+    dni: "30.000.002",
+    status: "activo",
+    assignedMatchesCount: 9,
+    completedMatchesCount: 9,
+    createdAtIso: "2025-03-22",
+  },
+  {
+    id: "u_plan_3",
+    name: "María López",
+    username: "maria",
+    email: "maria@tdefa.local",
+    phone: "+54 11 5555-0003",
+    dni: "30.000.003",
+    status: "activo",
+    assignedMatchesCount: 12,
+    completedMatchesCount: 11,
+    createdAtIso: "2025-06-05",
+  },
+  {
+    id: "u_plan_4",
+    name: "Agustín Pereira",
+    username: "agustin",
+    email: "agustin@tdefa.local",
+    phone: "+54 11 5555-0004",
+    dni: "30.000.004",
+    status: "inactivo",
+    assignedMatchesCount: 0,
+    completedMatchesCount: 34,
+    createdAtIso: "2024-10-01",
+  },
+];
+
