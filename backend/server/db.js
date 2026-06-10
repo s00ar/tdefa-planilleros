@@ -23,6 +23,11 @@ const parseJson = (value, fallback) => {
 const escapeIdentifier = (value) => `\`${String(value).replaceAll("`", "``")}\``;
 const catalogId = (prefix, value) =>
   `${prefix}_${createHash("sha1").update(String(value)).digest("hex").slice(0, 16)}`;
+const normalizeDbHost = (value) => {
+  const host = String(value ?? "").trim();
+  if (!host) return "127.0.0.1";
+  return host.toLowerCase() === "localhost" ? "127.0.0.1" : host;
+};
 
 const sameConfig = (left, right) =>
   Boolean(left) &&
@@ -34,7 +39,7 @@ const sameConfig = (left, right) =>
   left.database === right.database;
 
 export const getDbConfig = (overrides = {}) => ({
-  host: overrides.host ?? process.env.DB_HOST ?? "127.0.0.1",
+  host: normalizeDbHost(overrides.host ?? process.env.DB_HOST ?? "127.0.0.1"),
   port: Number(overrides.port ?? process.env.DB_PORT ?? 3306),
   user: overrides.user ?? process.env.DB_USER ?? "root",
   password: overrides.password ?? process.env.DB_PASSWORD ?? "",
