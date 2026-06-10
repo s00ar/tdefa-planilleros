@@ -1,38 +1,28 @@
-# TDEFA Digital (Frontend)
+# TDEFA Planilleros
 
-Frontend completo (mock) basado en la maqueta adjunta.
+Repositorio unificado con:
 
-## Stack
+- `frontend/`: aplicacion Vite del panel administrativo y la planilla.
+- `backend/`: API Node.js + MySQL.
+- `app.js`: entrypoint raiz para despliegue en Hostinger apuntando al backend.
 
-- React + TypeScript + Vite
-- React Router
-- TailwindCSS v4 + shadcn/ui
-- Zustand (estado global simple)
-- React Hook Form + Zod (formularios)
-- Lucide Icons
-- Framer Motion (microinteracciones)
+## Hostinger
 
-## Scripts
+El deploy Node.js de Hostinger puede seguir usando:
 
-```bash
-npm install
-npm run dev
-```
+- Root directory: `./`
+- Entry file: `app.js`
 
-Build:
+Variables necesarias en Hostinger:
 
-```bash
-npm run build
-npm run preview
-```
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+- `DB_AUTO_CREATE=false`
+- `DB_SEED=false`
 
-## Credenciales demo
+Para el frontend, usar:
 
-- Planillero: `planillero` / `planillero`
-- Administrador: `admin` / `admin`
-
-## Notas de datos mock
-
-- Se persiste en `localStorage` (para simular backend).
-- Mocks iniciales en `src/mocks`.
-
+- `VITE_API_URL=https://lightseagreen-baboon-179690.hostingersite.com/api`
