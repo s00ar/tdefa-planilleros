@@ -265,6 +265,30 @@ const createSchema = async (db) => {
     SET password = username
     WHERE password IS NULL OR password = ''
   `);
+  await db.query(`
+    INSERT INTO planilleros (
+      id, name, username, email, phone, dni, status, role, password,
+      assigned_matches_count, completed_matches_count, created_at_iso
+    )
+    SELECT
+      'u_admin_1',
+      'Administrador',
+      'admin',
+      'admin@tdefa.local',
+      NULL,
+      NULL,
+      'activo',
+      'admin',
+      'admin',
+      0,
+      0,
+      '2025-01-01'
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM planilleros
+      WHERE username = 'admin'
+    )
+  `);
 
   await db.query(`
     CREATE TABLE IF NOT EXISTS matches (

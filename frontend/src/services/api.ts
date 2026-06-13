@@ -2,12 +2,14 @@ import { localDb } from "@/services/localDb";
 
 const HOSTINGER_API_URL = "https://lightseagreen-baboon-179690.hostingersite.com/api";
 const SESSION_KEY = "tdefa.session";
+const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
+const isLocalDevelopment =
+  import.meta.env.DEV ||
+  (typeof window !== "undefined" && LOCAL_HOSTNAMES.has(window.location.hostname));
 
 const API_BASE =
   import.meta.env.VITE_API_URL ??
-  (typeof window !== "undefined" && window.location.hostname === "localhost"
-    ? "http://localhost:3001/api"
-    : HOSTINGER_API_URL);
+  (isLocalDevelopment ? "http://localhost:3001/api" : HOSTINGER_API_URL);
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
