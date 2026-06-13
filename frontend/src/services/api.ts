@@ -1,8 +1,13 @@
+import { localDb } from "@/services/localDb";
+
+const HOSTINGER_API_URL = "https://lightseagreen-baboon-179690.hostingersite.com/api";
+const SESSION_KEY = "tdefa.session";
+
 const API_BASE =
   import.meta.env.VITE_API_URL ??
   (typeof window !== "undefined" && window.location.hostname === "localhost"
     ? "http://localhost:3001/api"
-    : "/api");
+    : HOSTINGER_API_URL);
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -13,6 +18,7 @@ type RequestOptions = {
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const method = options.method ?? "GET";
+  const session = localDb.get<{ token?: string }>(SESSION_KEY);
   const requestId =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
@@ -29,6 +35,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
       method,
       headers: {
         "X-Request-Id": requestId,
+        ...(session?.token ? { Authorization: `Bearer ${session.token}` } : {}),
         ...(options.body ? { "Content-Type": "application/json" } : {}),
       },
       body: options.body ? JSON.stringify(options.body) : undefined,

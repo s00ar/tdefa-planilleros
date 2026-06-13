@@ -48,3 +48,20 @@ export const fetchJson = async (url, options) => {
   const data = text ? JSON.parse(text) : null;
   return { response, data };
 };
+
+export const loginAs = async (api, username, password) => {
+  const { response, data } = await fetchJson(`${api.baseUrl}/auth/login`, {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Login failed for ${username}: ${response.status}`);
+  }
+
+  return data;
+};
+
+export const authHeaders = (session) => ({
+  Authorization: `Bearer ${session.token}`,
+});

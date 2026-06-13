@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import cors from "cors";
 import express from "express";
@@ -12,6 +12,44 @@ import {
   mapTeamRow,
   mapTournamentRow,
 } from "./db.js";
+
+const SESSION_SECRET = process.env.SESSION_SECRET ?? "tdefa-dev-session-secret";
+
+const createSessionToken = (user) => {
+  const payload = Buffer.from(
+    JSON.stringify({
+      sub: user.id,
+      role: user.role,
+      username: user.username,
+      iat: Date.now(),
+    })
+  ).toString("base64url");
+  const signature = createHmac("sha256", SESSION_SECRET).update(payload).digest("base64url");
+  return `${payload}.${signature}`;
+};
+
+const parseSessionToken = (token) => {
+  const [payload, signature] = String(token ?? "").split(".");
+  if (!payload || !signature) return null;
+
+  const expectedSignature = createHmac("sha256", SESSION_SECRET).update(payload).digest("base64url");
+  if (signature !== expectedSignature) return null;
+
+  try {
+    const decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+    return decoded?.sub ? decoded : null;
+  } catch {
+    return null;
+  }
+};
+
+const getBearerToken = (req) => {
+  const authHeader = String(req.get("Authorization") ?? "");
+  if (authHeader.startsWith("Bearer ")) {
+    return authHeader.slice("Bearer ".length).trim();
+  }
+  return req.get("X-Session-Token") ?? "";
+};
 
 export const createApp = () => {
   const app = express();
@@ -41,6 +79,49 @@ export const createApp = () => {
     next();
   });
 
+  app.use("/api", (req, res, next) => {
+    if (req.path === "/health" || req.path === "/auth/login") {
+      next();
+      return;
+    }
+
+    void (async () => {
+      const token = getBearerToken(req);
+      const session = parseSessionToken(token);
+      if (!session?.sub) {
+        res.status(401).json({ message: "Sesion invalida o vencida" });
+        return;
+      }
+
+      const pool = getPool();
+      const [rows] = await pool.execute(
+        `SELECT id, name, username, status, role
+         FROM planilleros
+         WHERE id = ?
+         LIMIT 1`,
+        [session.sub]
+      );
+      const user = rows[0];
+
+      if (!user) {
+        res.status(401).json({ message: "Sesion invalida o vencida" });
+        return;
+      }
+      if (user.status !== "activo") {
+        res.status(403).json({ message: "El usuario esta inactivo" });
+        return;
+      }
+
+      req.authUser = {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        role: user.role,
+      };
+      next();
+    })().catch(next);
+  });
+
   const asyncHandler = (fn) => async (req, res) => {
     try {
       await fn(req, res);
@@ -61,6 +142,29 @@ export const createApp = () => {
     }
   };
 
+  const requireAdmin = (req, res) => {
+    if (req.authUser?.role === "admin") return true;
+    res.status(403).json({ message: "Acceso restringido a administradores" });
+    return false;
+  };
+
+  const requireMatchAccess = async (req, res, matchId) => {
+    const pool = getPool();
+    const [rows] = await pool.execute("SELECT * FROM matches WHERE id = ?", [matchId]);
+    const match = rows[0];
+
+    if (!match) {
+      res.status(404).json({ message: "Partido no encontrado" });
+      return null;
+    }
+    if (req.authUser?.role === "admin" || match.assigned_planillero_id === req.authUser?.id) {
+      return match;
+    }
+
+    res.status(403).json({ message: "No tenes acceso a este partido" });
+    return null;
+  };
+
   app.get(
     "/api/health",
     asyncHandler(async (_req, res) => {
@@ -70,9 +174,52 @@ export const createApp = () => {
     })
   );
 
+  app.post(
+    "/api/auth/login",
+    asyncHandler(async (req, res) => {
+      const pool = getPool();
+      const username = String(req.body.username ?? "").trim().toLowerCase();
+      const password = String(req.body.password ?? "");
+
+      if (!username || !password) {
+        res.status(400).json({ message: "Usuario y contrasena son obligatorios" });
+        return;
+      }
+
+      const [rows] = await pool.execute(
+        `SELECT id, name, username, status, role, password
+         FROM planilleros
+         WHERE LOWER(username) = ?
+         LIMIT 1`,
+        [username]
+      );
+      const user = rows[0];
+
+      if (!user || user.password !== password) {
+        res.status(401).json({ message: "Usuario o contrasena invalidos" });
+        return;
+      }
+      if (user.status !== "activo") {
+        res.status(403).json({ message: "El usuario esta inactivo" });
+        return;
+      }
+
+      res.json({
+        token: createSessionToken(user),
+        user: {
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          role: user.role,
+        },
+      });
+    })
+  );
+
   app.get(
     "/api/planilleros",
     asyncHandler(async (_req, res) => {
+      if (!requireAdmin(_req, res)) return;
       const pool = getPool();
       const [rows] = await pool.query(
         `SELECT
@@ -87,6 +234,7 @@ export const createApp = () => {
           completed_matches_count AS completedMatchesCount,
           created_at_iso AS createdAtIso
         FROM planilleros
+        WHERE role = 'planillero'
         ORDER BY created_at_iso DESC, name ASC`
       );
       res.json(rows);
@@ -96,6 +244,7 @@ export const createApp = () => {
   app.get(
     "/api/planilleros/:id",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const [rows] = await pool.execute(
         `SELECT
@@ -110,7 +259,7 @@ export const createApp = () => {
           completed_matches_count AS completedMatchesCount,
           created_at_iso AS createdAtIso
         FROM planilleros
-        WHERE id = ?`,
+        WHERE id = ? AND role = 'planillero'`,
         [req.params.id]
       );
       const item = rows[0];
@@ -125,6 +274,7 @@ export const createApp = () => {
   app.post(
     "/api/planilleros",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const body = req.body;
       const name = String(body.name ?? "").trim();
@@ -143,6 +293,8 @@ export const createApp = () => {
         phone: body.phone ?? null,
         dni: body.dni ?? null,
         status: body.status === "inactivo" ? "inactivo" : "activo",
+        role: "planillero",
+        password: String(body.password ?? username).trim() || username,
         assignedMatchesCount: Number(body.assignedMatchesCount ?? 0),
         completedMatchesCount: Number(body.completedMatchesCount ?? 0),
         createdAtIso: new Date().toISOString().slice(0, 10),
@@ -150,9 +302,9 @@ export const createApp = () => {
 
       await pool.execute(
         `INSERT INTO planilleros (
-          id, name, username, email, phone, dni, status,
+          id, name, username, email, phone, dni, status, role, password,
           assigned_matches_count, completed_matches_count, created_at_iso
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           created.id,
           created.name,
@@ -161,6 +313,8 @@ export const createApp = () => {
           created.phone,
           created.dni,
           created.status,
+          created.role,
+          created.password,
           created.assignedMatchesCount,
           created.completedMatchesCount,
           created.createdAtIso,
@@ -172,13 +326,14 @@ export const createApp = () => {
         id: created.id,
         username: created.username,
       });
-      res.status(201).json(created);
+      res.status(201).json({ id: created.id, name: created.name, username: created.username, email: created.email, phone: created.phone, dni: created.dni, status: created.status, assignedMatchesCount: created.assignedMatchesCount, completedMatchesCount: created.completedMatchesCount, createdAtIso: created.createdAtIso });
     })
   );
 
   app.patch(
     "/api/planilleros/:id",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const [rows] = await pool.execute(
         `SELECT
@@ -193,7 +348,7 @@ export const createApp = () => {
           completed_matches_count AS completedMatchesCount,
           created_at_iso AS createdAtIso
         FROM planilleros
-        WHERE id = ?`,
+        WHERE id = ? AND role = 'planillero'`,
         [req.params.id]
       );
       const current = rows[0];
@@ -237,12 +392,14 @@ export const createApp = () => {
   app.delete(
     "/api/planilleros/:id",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
-      const [result] = await pool.execute("DELETE FROM planilleros WHERE id = ?", [req.params.id]);
-      if (result.affectedRows === 0) {
+      const [rows] = await pool.execute("SELECT id FROM planilleros WHERE id = ? AND role = 'planillero'", [req.params.id]);
+      if (!rows[0]) {
         res.status(404).json({ message: "Planillero no encontrado" });
         return;
       }
+      await pool.execute("DELETE FROM planilleros WHERE id = ? AND role = 'planillero'", [req.params.id]);
       console.info("[db] planillero deleted", {
         requestId: req.requestId,
         id: req.params.id,
@@ -254,6 +411,7 @@ export const createApp = () => {
   app.get(
     "/api/tournaments",
     asyncHandler(async (_req, res) => {
+      if (!requireAdmin(_req, res)) return;
       const pool = getPool();
       const [rows] = await pool.query(
         `SELECT t.*,
@@ -268,6 +426,7 @@ export const createApp = () => {
   app.get(
     "/api/tournaments/:id",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const [rows] = await pool.execute(
         `SELECT t.*,
@@ -286,6 +445,7 @@ export const createApp = () => {
   app.post(
     "/api/tournaments",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const name = String(req.body.name ?? "").trim();
       if (!name) {
@@ -327,6 +487,7 @@ export const createApp = () => {
   app.patch(
     "/api/tournaments/:id",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const [rows] = await pool.execute("SELECT * FROM tournaments WHERE id = ?", [req.params.id]);
       if (!rows[0]) {
@@ -382,6 +543,7 @@ export const createApp = () => {
   app.delete(
     "/api/tournaments/:id",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const [rows] = await pool.execute("SELECT name FROM tournaments WHERE id = ?", [req.params.id]);
       if (!rows[0]) {
@@ -404,6 +566,7 @@ export const createApp = () => {
   app.get(
     "/api/teams",
     asyncHandler(async (_req, res) => {
+      if (!requireAdmin(_req, res)) return;
       const pool = getPool();
       const [rows] = await pool.query("SELECT * FROM teams ORDER BY status ASC, name ASC");
       const items = [];
@@ -423,6 +586,7 @@ export const createApp = () => {
   app.get(
     "/api/teams/:id",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const [rows] = await pool.execute("SELECT * FROM teams WHERE id = ?", [req.params.id]);
       if (!rows[0]) {
@@ -442,6 +606,7 @@ export const createApp = () => {
   app.post(
     "/api/teams",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const name = String(req.body.name ?? "").trim();
       const shortName = String(req.body.shortName ?? "").trim().toUpperCase();
@@ -471,6 +636,7 @@ export const createApp = () => {
   app.patch(
     "/api/teams/:id",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const [rows] = await pool.execute("SELECT * FROM teams WHERE id = ?", [req.params.id]);
       if (!rows[0]) {
@@ -530,6 +696,7 @@ export const createApp = () => {
   app.delete(
     "/api/teams/:id",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const [rows] = await pool.execute("SELECT id FROM teams WHERE id = ?", [req.params.id]);
       if (!rows[0]) {
@@ -556,7 +723,19 @@ export const createApp = () => {
     "/api/matches",
     asyncHandler(async (req, res) => {
       const pool = getPool();
-      const assignedPlanilleroId = req.query.assignedPlanilleroId;
+      const requestedPlanilleroId = String(req.query.assignedPlanilleroId ?? "").trim();
+      const assignedPlanilleroId =
+        req.authUser.role === "admin"
+          ? requestedPlanilleroId || null
+          : requestedPlanilleroId && requestedPlanilleroId !== req.authUser.id
+            ? "__forbidden__"
+            : req.authUser.id;
+
+      if (assignedPlanilleroId === "__forbidden__") {
+        res.status(403).json({ message: "No tenes acceso a los partidos de otro planillero" });
+        return;
+      }
+
       const query = assignedPlanilleroId
         ? `SELECT * FROM matches WHERE assigned_planillero_id = ? ORDER BY date_iso DESC, time DESC`
         : `SELECT * FROM matches ORDER BY date_iso DESC, time DESC`;
@@ -569,6 +748,7 @@ export const createApp = () => {
   app.post(
     "/api/matches",
     asyncHandler(async (req, res) => {
+      if (!requireAdmin(req, res)) return;
       const pool = getPool();
       const body = req.body;
       const requiredText = [
@@ -596,7 +776,7 @@ export const createApp = () => {
       try {
         await connection.beginTransaction();
         const [planilleros] = await connection.execute(
-          "SELECT id FROM planilleros WHERE id = ? AND status = 'activo'",
+          "SELECT id FROM planilleros WHERE id = ? AND status = 'activo' AND role = 'planillero'",
           [body.assignedPlanilleroId]
         );
         if (!planilleros[0]) {
@@ -698,13 +878,8 @@ export const createApp = () => {
   app.get(
     "/api/matches/:id",
     asyncHandler(async (req, res) => {
-      const pool = getPool();
-      const [rows] = await pool.execute("SELECT * FROM matches WHERE id = ?", [req.params.id]);
-      const row = rows[0];
-      if (!row) {
-        res.status(404).json({ message: "Partido no encontrado" });
-        return;
-      }
+      const row = await requireMatchAccess(req, res, req.params.id);
+      if (!row) return;
       res.json(mapMatchRow(row));
     })
   );
@@ -712,6 +887,8 @@ export const createApp = () => {
   app.patch(
     "/api/matches/:id/status",
     asyncHandler(async (req, res) => {
+      const current = await requireMatchAccess(req, res, req.params.id);
+      if (!current) return;
       const pool = getPool();
       await pool.execute("UPDATE matches SET status = ?, reopen_reason = ? WHERE id = ?", [
         req.body.status,
@@ -726,6 +903,8 @@ export const createApp = () => {
   app.patch(
     "/api/matches/:id/score",
     asyncHandler(async (req, res) => {
+      const current = await requireMatchAccess(req, res, req.params.id);
+      if (!current) return;
       const pool = getPool();
       await pool.execute("UPDATE matches SET score = ? WHERE id = ?", [
         JSON.stringify(req.body.score),
@@ -739,6 +918,8 @@ export const createApp = () => {
   app.get(
     "/api/sheets/:matchId",
     asyncHandler(async (req, res) => {
+      const match = await requireMatchAccess(req, res, req.params.matchId);
+      if (!match) return;
       const pool = getPool();
       const [rows] = await pool.execute("SELECT * FROM sheets WHERE match_id = ?", [req.params.matchId]);
       const row = rows[0];
@@ -773,6 +954,8 @@ export const createApp = () => {
   app.put(
     "/api/sheets/:matchId",
     asyncHandler(async (req, res) => {
+      const match = await requireMatchAccess(req, res, req.params.matchId);
+      if (!match) return;
       const pool = getPool();
       const payload = {
         matchId: req.params.matchId,
@@ -812,6 +995,8 @@ export const createApp = () => {
   app.post(
     "/api/sheets/:matchId/incidents",
     asyncHandler(async (req, res) => {
+      const match = await requireMatchAccess(req, res, req.params.matchId);
+      if (!match) return;
       const pool = getPool();
       const [rows] = await pool.execute("SELECT * FROM sheets WHERE match_id = ?", [req.params.matchId]);
       const current = rows[0]
@@ -877,3 +1062,4 @@ export const startServer = async (options = {}) => {
     });
   });
 };
+

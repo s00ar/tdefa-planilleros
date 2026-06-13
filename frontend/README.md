@@ -1,6 +1,6 @@
 # TDEFA Digital (Frontend)
 
-Frontend React con API local Node + MySQL para TDEFA.
+Frontend React conectado a la API Node + MySQL real de TDEFA.
 
 ## Stack
 
@@ -24,6 +24,12 @@ npm run dev
 - frontend Vite en `http://localhost:5173`
 - API local en `http://localhost:3001/api`
 
+Importante:
+
+- el frontend local y el frontend desplegado deben consultar siempre la API real
+- la fuente de verdad es MySQL a traves del backend, no mocks del frontend
+- el login tambien pasa por `/api/auth/login`
+
 ## Usar Hostinger
 
 Si quieres que el frontend apunte al backend desplegado en Hostinger en lugar de `localhost`, crea `frontend/.env.local` con:
@@ -37,7 +43,7 @@ Tambien puedes copiar `frontend/.env.hostinger.example`.
 Importante:
 
 - esto solo funciona si la API remota responde correctamente
-- hoy el dominio remoto devuelve `503`, asi que antes hay que corregir la configuracion del backend y su MySQL en Hostinger
+- la API remota debe estar conectada a la base MySQL real del backend
 
 Configuracion MySQL por defecto:
 
@@ -77,4 +83,4 @@ Incluye:
 - Planillero: `planillero` / `planillero`
 - Administrador: `admin` / `admin`
 
-La API crea la base y las tablas si no existen, y sincroniza datos semilla para partidos, planillas y planilleros.
+La API crea la base y las tablas si no existen, y sincroniza datos semilla para partidos, planillas, planilleros y credenciales demo.

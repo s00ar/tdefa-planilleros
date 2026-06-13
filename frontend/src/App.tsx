@@ -55,6 +55,11 @@ export default function App() {
               <Route element={<PlanilleroLayout />}>
                 <Route path="/partidos" element={<AssignedMatchesPage />} />
                 <Route path="/incidencias/nueva" element={<NewIncidentPage />} />
+              </Route>
+            </Route>
+
+            <Route element={<RequireRole allowed={["admin"]} />}>
+              <Route element={<PlanilleroLayout />}>
                 <Route path="/torneos" element={<CatalogManagementPage kind="tournaments" />} />
                 <Route path="/equipos" element={<CatalogManagementPage kind="teams" />} />
                 <Route path="/historial" element={<HistoryPage />} />

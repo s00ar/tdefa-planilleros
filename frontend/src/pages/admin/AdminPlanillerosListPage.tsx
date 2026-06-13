@@ -165,7 +165,7 @@ export function AdminPlanillerosListPage() {
     link.download = "planilleros.csv";
     link.click();
     URL.revokeObjectURL(url);
-    toast.success("Exportación generada", {
+    toast.success("ExportaciÃ³n generada", {
       description: `Se descargaron ${filteredItems.length} registros.`,
     });
   };
@@ -189,22 +189,22 @@ export function AdminPlanillerosListPage() {
       <div className="flex flex-wrap items-end justify-between gap-[24px]">
         <div className="max-w-[780px]">
           <nav className="mb-[16px] flex items-center gap-[12px] text-[14px] font-medium text-[#5e5e5e]">
-            <span>Administración</span>
+            <span>AdministraciÃ³n</span>
             <ChevronRight className="h-[16px] w-[16px]" />
             <span className="font-bold text-[#570000]">Planilleros</span>
           </nav>
-          <h1 className="m-0 font-heading text-[52px] font-extrabold leading-[1.05] text-[#300000]">
-            Gestión de planilleros
+          <h1 className="m-0 font-heading text-[36px] font-extrabold leading-[1.05] text-[#300000] sm:text-[44px] lg:text-[52px]">
+            GestiÃ³n de planilleros
           </h1>
-          <p className="mt-[12px] text-[20px] leading-[1.45] text-[#5e5e5e]">
-            Altas, bajas y edición de planilleros conectados a la base de datos del sistema.
+          <p className="mt-[12px] text-[17px] leading-[1.45] text-[#5e5e5e] sm:text-[20px]">
+            Altas, bajas y ediciÃ³n de planilleros conectados a la base de datos del sistema.
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => navigate("/admin/planilleros/nuevo")}
-          className="flex h-[58px] shrink-0 items-center gap-[12px] rounded-[8px] bg-[linear-gradient(135deg,#570000_0%,#300000_100%)] px-[26px] text-[18px] font-semibold text-[#ffffff] shadow-[0_18px_30px_rgba(87,0,0,0.18)] transition hover:opacity-90"
+          className="flex h-[54px] w-full items-center justify-center gap-[12px] rounded-[8px] bg-[linear-gradient(135deg,#570000_0%,#300000_100%)] px-[26px] text-[16px] font-semibold text-[#ffffff] shadow-[0_18px_30px_rgba(87,0,0,0.18)] transition hover:opacity-90 sm:w-auto sm:text-[18px]"
         >
           <UserPlus className="h-[22px] w-[22px]" />
           Crear planillero
@@ -224,7 +224,7 @@ export function AdminPlanillerosListPage() {
 
       <section className="overflow-hidden rounded-[12px] border border-[#ead5d2] bg-[#ffffff] shadow-[0_10px_30px_rgba(36,25,23,0.05)]">
         <div className="flex flex-wrap items-center justify-between gap-[16px] border-b border-[#f0e1de] bg-[#fff8f7] p-[24px]">
-          <div className="relative min-w-[280px] flex-1">
+          <div className="relative min-w-0 flex-1 basis-full sm:basis-auto">
             <Search className="pointer-events-none absolute left-[16px] top-1/2 h-[20px] w-[20px] -translate-y-1/2 text-[#5e5e5e]" />
             <input
               value={query}
@@ -239,17 +239,17 @@ export function AdminPlanillerosListPage() {
             />
           </div>
 
-          <div className="relative flex items-center gap-[12px]">
+          <div className="relative flex w-full flex-col gap-[12px] sm:w-auto sm:flex-row sm:items-center">
             <button
               type="button"
               onClick={() => setFilterOpen((current) => !current)}
-              className="flex h-[46px] items-center gap-[10px] rounded-[8px] border border-[#ead5d2] bg-[#ffffff] px-[18px] text-[14px] font-medium text-[#5e5e5e]"
+              className="flex h-[46px] w-full items-center justify-center gap-[10px] rounded-[8px] border border-[#ead5d2] bg-[#ffffff] px-[18px] text-[14px] font-medium text-[#5e5e5e] sm:w-auto"
             >
               <Filter className="h-[18px] w-[18px]" />
               {statusFilter === "all" ? "Todos los estados" : statusFilter === "activo" ? "Activos" : "Inactivos"}
             </button>
             {filterOpen ? (
-              <div className="absolute right-[124px] top-[54px] z-30 w-[220px] rounded-[8px] border border-[#ead5d2] bg-[#ffffff] p-[8px] shadow-[0_18px_34px_rgba(36,25,23,0.14)]">
+              <div className="absolute left-0 top-[54px] z-30 w-full rounded-[8px] border border-[#ead5d2] bg-[#ffffff] p-[8px] shadow-[0_18px_34px_rgba(36,25,23,0.14)] sm:left-auto sm:right-[124px] sm:w-[220px]">
                 {(["all", "activo", "inactivo"] as const).map((value) => {
                   const label = value === "all" ? "Todos" : value === "activo" ? "Activos" : "Inactivos";
                   return (
@@ -275,7 +275,7 @@ export function AdminPlanillerosListPage() {
             <button
               type="button"
               onClick={exportRows}
-              className="flex h-[46px] items-center gap-[10px] rounded-[8px] border border-[#ead5d2] bg-[#ffffff] px-[18px] text-[14px] font-medium text-[#5e5e5e]"
+              className="flex h-[46px] w-full items-center justify-center gap-[10px] rounded-[8px] border border-[#ead5d2] bg-[#ffffff] px-[18px] text-[14px] font-medium text-[#5e5e5e] sm:w-auto"
             >
               <Download className="h-[18px] w-[18px]" />
               Exportar
@@ -289,7 +289,30 @@ export function AdminPlanillerosListPage() {
           </div>
         ) : null}
 
-        <div className="overflow-x-auto">
+        <div className="grid gap-4 p-4 lg:hidden">
+          {loading
+            ? Array.from({ length: PAGE_SIZE }).map((_, index) => (
+                <div key={index} className="h-[180px] animate-pulse rounded-[12px] bg-[#f4e3e0]" />
+              ))
+            : pageItems.length === 0
+              ? (
+                <div className="rounded-[12px] border border-dashed border-[#ead5d2] px-[20px] py-[36px] text-center text-[15px] text-[#5e5e5e]">
+                  No hay planilleros para los filtros actuales.
+                </div>
+              )
+              : pageItems.map((item) => (
+                  <PlanilleroMobileCard
+                    key={item.id}
+                    item={item}
+                    onEdit={() => navigate(`/admin/planilleros/${item.id}/editar`)}
+                    onRemove={() => void removeItem(item)}
+                    onActivate={() => void updateStatus(item, "activo")}
+                    onDeactivate={() => void updateStatus(item, "inactivo")}
+                  />
+                ))}
+        </div>
+
+        <div className="hidden overflow-x-auto lg:block">
           <table className="w-full min-w-[1040px] border-collapse">
             <thead>
               <tr className="border-b border-[#f0e1de] text-left">
@@ -396,7 +419,7 @@ export function AdminPlanillerosListPage() {
               <ChevronLeft className="h-[18px] w-[18px]" />
             </button>
             <span className="text-[14px] font-semibold text-[#241917]">
-              Página {activePage} de {pageCount}
+              PÃ¡gina {activePage} de {pageCount}
             </span>
             <button
               type="button"
@@ -408,6 +431,70 @@ export function AdminPlanillerosListPage() {
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+function PlanilleroMobileCard({
+  item,
+  onEdit,
+  onRemove,
+  onActivate,
+  onDeactivate,
+}: {
+  item: Planillero;
+  onEdit: () => void;
+  onRemove: () => void;
+  onActivate: () => void;
+  onDeactivate: () => void;
+}) {
+  return (
+    <article className="rounded-[12px] border border-[#f0e1de] bg-[#ffffff] p-[18px] shadow-[0_8px_24px_rgba(36,25,23,0.04)]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate text-[18px] font-semibold text-[#300000]">{item.name}</p>
+          <p className="mt-1 text-[13px] text-[#5e5e5e]">@{item.username}</p>
+          <p className="mt-1 text-[12px] text-[#8b716d]">{item.id}</p>
+        </div>
+        <StatusPill status={item.status} />
+      </div>
+
+      <dl className="mt-4 grid gap-3 text-[14px] text-[#241917] sm:grid-cols-2">
+        <MetaRow label="Contacto" value={item.email ?? item.phone ?? item.dni ?? "-"} />
+        <MetaRow
+          label="Partidos"
+          value={`${item.completedMatchesCount} cerrados / ${item.assignedMatchesCount} asignados`}
+        />
+        <MetaRow label="Alta" value={formatDateEs(item.createdAtIso)} />
+        <MetaRow label="Extra" value={item.phone ?? item.dni ?? "Sin dato adicional"} />
+      </dl>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-[#f6e9e7] pt-4">
+        <ActionButton label="Editar planillero" onClick={onEdit}>
+          <Edit3 className="h-[18px] w-[18px]" />
+        </ActionButton>
+        {item.status === "activo" ? (
+          <ActionButton label="Desactivar planillero" onClick={onDeactivate}>
+            <UserX className="h-[18px] w-[18px]" />
+          </ActionButton>
+        ) : (
+          <ActionButton label="Reactivar planillero" onClick={onActivate}>
+            <UserCheck className="h-[18px] w-[18px]" />
+          </ActionButton>
+        )}
+        <ActionButton label="Eliminar planillero" tone="danger" onClick={onRemove}>
+          <Trash2 className="h-[18px] w-[18px]" />
+        </ActionButton>
+      </div>
+    </article>
+  );
+}
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8b716d]">{label}</dt>
+      <dd className="mt-1 text-[14px] text-[#241917]">{value}</dd>
     </div>
   );
 }

@@ -70,8 +70,20 @@ test(
         return response.json();
       });
 
+      const login = await waitFor(async () => {
+        const response = await fetch(`http://127.0.0.1:${apiPort}/api/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: "admin", password: "admin" }),
+        });
+        if (!response.ok) throw new Error(`Login status ${response.status}`);
+        return response.json();
+      });
+
       const matches = await waitFor(async () => {
-        const response = await fetch(`http://127.0.0.1:${apiPort}/api/matches`);
+        const response = await fetch(`http://127.0.0.1:${apiPort}/api/matches`, {
+          headers: { Authorization: `Bearer ${login.token}` },
+        });
         if (!response.ok) throw new Error(`Matches status ${response.status}`);
         return response.json();
       });

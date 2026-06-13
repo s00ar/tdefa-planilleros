@@ -14,12 +14,15 @@ type IncidentType = MatchSheet["incidents"][number]["type"];
 type IncidentTeam = MatchSheet["incidents"][number]["team"];
 
 const incidentTypes: Array<{ value: IncidentType; label: string }> = [
-  { value: "nota", label: "Observación" },
+  { value: "nota", label: "ObservaciÃ³n" },
   { value: "gol", label: "Gol" },
   { value: "amarilla", label: "Tarjeta amarilla" },
-  { value: "expulsion", label: "Expulsión" },
+  { value: "expulsion", label: "ExpulsiÃ³n" },
   { value: "cambio", label: "Cambio" },
 ];
+
+const inputClass =
+  "h-[56px] w-full rounded-[8px] border border-[#ead5d2] bg-[#f3deda] px-[18px] text-[16px] text-[#241917] outline-none sm:h-[64px] sm:px-[22px] sm:text-[18px]";
 
 export function NewIncidentPage() {
   const user = useAuthUser();
@@ -51,7 +54,7 @@ export function NewIncidentPage() {
         if (!mounted) return;
         console.error("[incidents] matches load failed", error);
         toast.error("No se pudieron cargar los partidos", {
-          description: error instanceof Error ? error.message : "Intentá nuevamente.",
+          description: error instanceof Error ? error.message : "IntentÃ¡ nuevamente.",
         });
       }
     })();
@@ -74,7 +77,7 @@ export function NewIncidentPage() {
 
     const cleanLabel = label.trim();
     if (!cleanLabel) {
-      toast.error("Completá el detalle de la incidencia");
+      toast.error("CompletÃ¡ el detalle de la incidencia");
       return;
     }
 
@@ -90,13 +93,13 @@ export function NewIncidentPage() {
       });
       console.info("[incidents] create completed", { matchId: selectedMatch.id });
       toast.success("Incidencia registrada", {
-        description: `${selectedMatch.pitch} • ${selectedMatch.homeTeam.name} vs ${selectedMatch.awayTeam.name}`,
+        description: `${selectedMatch.pitch} â€¢ ${selectedMatch.homeTeam.name} vs ${selectedMatch.awayTeam.name}`,
       });
       navigate(`/partidos/${selectedMatch.id}/planilla`);
     } catch (createError) {
       console.error("[incidents] create failed", { matchId: selectedMatch.id, error: createError });
       toast.error("No se pudo registrar la incidencia", {
-        description: createError instanceof Error ? createError.message : "Intentá nuevamente.",
+        description: createError instanceof Error ? createError.message : "IntentÃ¡ nuevamente.",
       });
     } finally {
       submittingRef.current = false;
@@ -105,24 +108,24 @@ export function NewIncidentPage() {
   };
 
   return (
-    <div className="space-y-[34px]">
-      <section className="flex items-end justify-between">
+    <div className="space-y-8">
+      <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="mb-[12px] text-[16px] font-medium uppercase tracking-[0.18em] text-[#e46857]">
+          <p className="mb-3 text-[13px] font-bold uppercase tracking-[0.18em] text-[#e46857] sm:text-[16px]">
             Registro Operativo
           </p>
-          <div className="flex items-center gap-3">
-            <h1 className="font-['Manrope'] text-[52px] font-black leading-[1.05] tracking-[-0.02em] text-[#300000]">
+          <div className="flex items-start gap-3">
+            <h1 className="font-['Manrope'] text-[34px] font-black leading-[1.05] tracking-[-0.02em] text-[#300000] sm:text-[42px] lg:text-[52px]">
               Registrar incidencia
             </h1>
             <IncidentHelp className="size-8 text-base" />
           </div>
-          <p className="mt-[12px] text-[21px] leading-[1.35] text-[#5e5e5e]">
-            Cargá un evento puntual y sincronizalo con la planilla del partido.
+          <p className="mt-3 max-w-3xl text-[17px] leading-[1.4] text-[#5e5e5e] sm:text-[20px] lg:text-[21px]">
+            CargÃ¡ un evento puntual y sincronizalo con la planilla del partido.
           </p>
         </div>
         <button
-          className="flex h-[58px] appearance-none items-center gap-[12px] rounded-[4px] border-0 bg-[#e9eaeb] px-[24px] text-[18px] font-semibold text-[#241917]"
+          className="flex h-[52px] w-full appearance-none items-center justify-center gap-[12px] rounded-[8px] border-0 bg-[#e9eaeb] px-[20px] text-[16px] font-semibold text-[#241917] sm:w-auto sm:px-[24px] sm:text-[18px]"
           onClick={() => navigate("/partidos")}
           type="button"
         >
@@ -131,12 +134,12 @@ export function NewIncidentPage() {
         </button>
       </section>
 
-      <div className="grid grid-cols-[minmax(0,1fr)_380px] gap-[30px]">
-        <section className="rounded-[8px] bg-[#ffffff] p-[50px] shadow-[0_10px_30px_-10px_rgba(36,25,23,0.08)]">
-          <div className="grid grid-cols-2 gap-[30px]">
-            <Field label="Partido asignado" className="[grid-column:span_2/span_2]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="rounded-[12px] bg-[#ffffff] p-5 shadow-[0_10px_30px_-10px_rgba(36,25,23,0.08)] sm:p-8 lg:p-[40px]">
+          <div className="grid gap-5 md:grid-cols-2 md:gap-6 lg:gap-[30px]">
+            <Field label="Partido asignado" className="md:col-span-2">
               <select
-                className="h-[70px] w-full appearance-none rounded-[4px] border-0 bg-[#f3deda] px-[22px] text-[20px] text-[#241917] outline-none"
+                className={inputClass}
                 disabled={matches.length === 0}
                 onChange={(event) => setMatchId(event.target.value)}
                 value={matchId}
@@ -144,7 +147,7 @@ export function NewIncidentPage() {
                 {matches.length === 0 ? <option value="">No hay partidos disponibles</option> : null}
                 {matches.map((match) => (
                   <option key={match.id} value={match.id}>
-                    {match.pitch} • {match.homeTeam.name} vs {match.awayTeam.name}
+                    {match.pitch} â€¢ {match.homeTeam.name} vs {match.awayTeam.name}
                   </option>
                 ))}
               </select>
@@ -152,7 +155,7 @@ export function NewIncidentPage() {
 
             <Field label="Minuto">
               <input
-                className="h-[70px] w-full rounded-[4px] border-0 bg-[#f3deda] px-[22px] text-[20px] text-[#241917] outline-none"
+                className={inputClass}
                 inputMode="numeric"
                 onChange={(event) => setMinute(event.target.value)}
                 type="number"
@@ -162,7 +165,7 @@ export function NewIncidentPage() {
 
             <Field label="Tipo">
               <select
-                className="h-[70px] w-full appearance-none rounded-[4px] border-0 bg-[#f3deda] px-[22px] text-[20px] text-[#241917] outline-none"
+                className={inputClass}
                 onChange={(event) => setType(event.target.value as IncidentType)}
                 value={type}
               >
@@ -176,7 +179,7 @@ export function NewIncidentPage() {
 
             <Field label="Equipo">
               <select
-                className="h-[70px] w-full appearance-none rounded-[4px] border-0 bg-[#f3deda] px-[22px] text-[20px] text-[#241917] outline-none"
+                className={inputClass}
                 onChange={(event) => setTeam(event.target.value as IncidentTeam)}
                 value={team}
               >
@@ -186,63 +189,63 @@ export function NewIncidentPage() {
             </Field>
 
             <Field label="Prioridad">
-              <div className="flex h-[70px] items-center gap-[14px] rounded-[4px] bg-[#fff0ee] px-[22px] text-[18px] font-semibold text-[#852318]">
-                <AlertTriangle className="h-[24px] w-[24px]" />
-                Seguimiento técnico
+              <div className="flex min-h-[56px] items-center gap-[14px] rounded-[8px] bg-[#fff0ee] px-[18px] text-[16px] font-semibold text-[#852318] sm:min-h-[64px] sm:px-[22px] sm:text-[18px]">
+                <AlertTriangle className="h-[22px] w-[22px] shrink-0 sm:h-[24px] sm:w-[24px]" />
+                Seguimiento tÃ©cnico
               </div>
             </Field>
 
-            <Field label="Detalle de la incidencia" className="[grid-column:span_2/span_2]">
+            <Field label="Detalle de la incidencia" className="md:col-span-2">
               <textarea
-                className="min-h-[170px] w-full resize-none rounded-[4px] border-0 bg-[#f3deda] px-[22px] py-[18px] text-[20px] leading-[1.45] text-[#241917] outline-none placeholder:text-[#636262]"
+                className="min-h-[170px] w-full resize-none rounded-[8px] border border-[#ead5d2] bg-[#f3deda] px-[18px] py-[16px] text-[16px] leading-[1.45] text-[#241917] outline-none placeholder:text-[#636262] sm:px-[22px] sm:py-[18px] sm:text-[18px]"
                 onChange={(event) => setLabel(event.target.value)}
-                placeholder="Ej. Firma de capitán faltante, corrección de gol, observación del árbitro..."
+                placeholder="Ej. Firma de capitÃ¡n faltante, correcciÃ³n de gol, observaciÃ³n del Ã¡rbitro..."
                 value={label}
               />
             </Field>
           </div>
 
-          <div className="mt-[34px] flex items-center justify-end gap-[20px] border-t border-[#000000]/10 pt-[30px]">
+          <div className="mt-8 flex flex-col gap-3 border-t border-[#000000]/10 pt-6 sm:flex-row sm:justify-end">
             <button
-              className="h-[58px] appearance-none rounded-[4px] border-0 bg-[#e9eaeb] px-[36px] text-[20px] font-semibold text-[#241917]"
+              className="h-[52px] appearance-none rounded-[8px] border-0 bg-[#e9eaeb] px-[24px] text-[16px] font-semibold text-[#241917] sm:px-[30px] sm:text-[18px]"
               onClick={() => navigate("/partidos")}
               type="button"
             >
               Cancelar
             </button>
             <button
-              className="flex h-[58px] appearance-none items-center gap-[12px] rounded-[4px] border-0 bg-[linear-gradient(135deg,#a53a2d_0%,#300000_100%)] px-[36px] text-[20px] font-semibold text-[#ffffff] shadow-[0_16px_30px_rgba(48,0,0,0.18)] disabled:opacity-60"
+              className="flex h-[52px] appearance-none items-center justify-center gap-[12px] rounded-[8px] border-0 bg-[linear-gradient(135deg,#a53a2d_0%,#300000_100%)] px-[24px] text-[16px] font-semibold text-[#ffffff] shadow-[0_16px_30px_rgba(48,0,0,0.18)] disabled:opacity-60 sm:px-[30px] sm:text-[18px]"
               disabled={submitting}
               onClick={() => void submit()}
               type="button"
             >
-              <Save className="h-[22px] w-[22px]" />
+              <Save className="h-[20px] w-[20px]" />
               {submitting ? "Guardando..." : "Registrar incidencia"}
             </button>
           </div>
         </section>
 
-        <aside className="space-y-[30px]">
-          <section className="rounded-[8px] bg-[#ffffff] p-[30px] shadow-[0_10px_30px_-10px_rgba(36,25,23,0.08)]">
-            <div className="flex h-[70px] items-center gap-[18px] rounded-[6px] bg-[#fff0ee] px-[22px] text-[#852318]">
-              <CalendarClock className="h-[30px] w-[30px]" />
+        <aside className="space-y-6">
+          <section className="rounded-[12px] bg-[#ffffff] p-5 shadow-[0_10px_30px_-10px_rgba(36,25,23,0.08)] sm:p-6">
+            <div className="flex min-h-[70px] items-center gap-[18px] rounded-[8px] bg-[#fff0ee] px-[18px] text-[#852318]">
+              <CalendarClock className="h-[28px] w-[28px]" />
               <div>
-                <p className="text-[13px] font-bold uppercase tracking-[0.14em]">Partido</p>
+                <p className="text-[12px] font-bold uppercase tracking-[0.14em]">Partido</p>
                 <p className="mt-[4px] text-[18px] font-semibold">{selectedMatch?.pitch ?? "Sin asignar"}</p>
               </div>
             </div>
-            <div className="mt-[26px] text-[18px] leading-[1.55] text-[#5e5e5e]">
+            <div className="mt-5 text-[16px] leading-[1.55] text-[#5e5e5e] sm:text-[18px]">
               {selectedMatch
-                ? `${selectedMatch.homeTeam.name} vs ${selectedMatch.awayTeam.name} • ${selectedMatch.venue}`
+                ? `${selectedMatch.homeTeam.name} vs ${selectedMatch.awayTeam.name} â€¢ ${selectedMatch.venue}`
                 : "No hay partidos disponibles para registrar una incidencia."}
             </div>
           </section>
 
-          <section className="rounded-[8px] border border-[#000000]/15 bg-[#e9eaeb]/50 p-[30px]">
-            <h2 className="m-[0] text-[14px] font-bold uppercase tracking-[0.22em] text-[#300000]">
+          <section className="rounded-[12px] border border-[#000000]/15 bg-[#e9eaeb]/50 p-5 sm:p-6">
+            <h2 className="m-[0] text-[13px] font-bold uppercase tracking-[0.22em] text-[#300000]">
               Checklist
             </h2>
-            <ul className="m-[0] mt-[24px] list-none space-y-[16px] p-[0] text-[18px] text-[#241917]">
+            <ul className="m-[0] mt-5 list-none space-y-[14px] p-[0] text-[16px] text-[#241917] sm:text-[18px]">
               <li className="flex items-center gap-[12px]">
                 <CheckCircle2 className="h-[20px] w-[20px]" />
                 Partido seleccionado
@@ -258,10 +261,12 @@ export function NewIncidentPage() {
             </ul>
           </section>
 
-          <section className="rounded-[8px] bg-[#300000] p-[30px] text-[#ffffff]">
+          <section className="rounded-[12px] bg-[#300000] p-5 text-[#ffffff] sm:p-6">
             <FileText className="mb-[20px] h-[34px] w-[34px]" />
-            <p className="text-[22px] font-bold leading-tight">La incidencia queda registrada en la planilla.</p>
-            <p className="mt-[14px] text-[16px] leading-[1.5] text-[#ffdad4]">
+            <p className="text-[20px] font-bold leading-tight sm:text-[22px]">
+              La incidencia queda registrada en la planilla.
+            </p>
+            <p className="mt-[14px] text-[15px] leading-[1.5] text-[#ffdad4] sm:text-[16px]">
               Al guardar, vas directo al partido para revisar el historial completo.
             </p>
           </section>
@@ -282,7 +287,7 @@ function Field({
 }) {
   return (
     <label className={className}>
-      <span className="mb-[14px] block text-[14px] font-medium uppercase leading-none text-[#464747]">
+      <span className="mb-[10px] block text-[12px] font-medium uppercase leading-none tracking-[0.08em] text-[#464747] sm:mb-[14px] sm:text-[14px]">
         {label}
       </span>
       {children}

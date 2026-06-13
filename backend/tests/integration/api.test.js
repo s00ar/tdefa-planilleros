@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
-import { fetchJson, resetTestDatabase, startTestApiServer } from "../helpers/test-server.js";
+import {
+  authHeaders,
+  fetchJson,
+  loginAs,
+  resetTestDatabase,
+  startTestApiServer,
+} from "../helpers/test-server.js";
 
 let api;
 
@@ -18,8 +24,10 @@ after(async () => {
 });
 
 test("GET /api/matches returns seeded matches filtered by planillero", async () => {
+  const session = await loginAs(api, "planillero", "planillero");
   const { response, data } = await fetchJson(
-    `${api.baseUrl}/matches?assignedPlanilleroId=u_plan_1`
+    `${api.baseUrl}/matches?assignedPlanilleroId=u_plan_1`,
+    { headers: authHeaders(session) }
   );
 
   assert.equal(response.status, 200);
@@ -30,6 +38,7 @@ test("GET /api/matches returns seeded matches filtered by planillero", async () 
 });
 
 test("planillero CRUD persists each creation exactly once", async () => {
+  const adminSession = await loginAs(api, "admin", "admin");
   const payload = {
     name: "Alta Integracion",
     username: "alta.integracion",
@@ -44,22 +53,28 @@ test("planillero CRUD persists each creation exactly once", async () => {
   const created = await fetchJson(`${api.baseUrl}/planilleros`, {
     method: "POST",
     body: JSON.stringify(payload),
+    headers: authHeaders(adminSession),
   });
   assert.equal(created.response.status, 201);
   assert.match(created.data.id, /^u_plan_/);
 
-  const listed = await fetchJson(`${api.baseUrl}/planilleros`);
+  const listed = await fetchJson(`${api.baseUrl}/planilleros`, {
+    headers: authHeaders(adminSession),
+  });
   const matches = listed.data.filter((item) => item.username === payload.username);
   assert.equal(matches.length, 1);
   assert.equal(matches[0].email, payload.email);
 
-  const loaded = await fetchJson(`${api.baseUrl}/planilleros/${created.data.id}`);
+  const loaded = await fetchJson(`${api.baseUrl}/planilleros/${created.data.id}`, {
+    headers: authHeaders(adminSession),
+  });
   assert.equal(loaded.response.status, 200);
   assert.equal(loaded.data.name, payload.name);
 
   const updated = await fetchJson(`${api.baseUrl}/planilleros/${created.data.id}`, {
     method: "PATCH",
     body: JSON.stringify({ status: "inactivo", phone: "+54 11 5555 0202" }),
+    headers: authHeaders(adminSession),
   });
   assert.equal(updated.response.status, 200);
   assert.equal(updated.data.status, "inactivo");
@@ -68,19 +83,24 @@ test("planillero CRUD persists each creation exactly once", async () => {
   const duplicate = await fetchJson(`${api.baseUrl}/planilleros`, {
     method: "POST",
     body: JSON.stringify(payload),
+    headers: authHeaders(adminSession),
   });
   assert.equal(duplicate.response.status, 409);
 
   const removed = await fetch(`${api.baseUrl}/planilleros/${created.data.id}`, {
     method: "DELETE",
+    headers: authHeaders(adminSession),
   });
   assert.equal(removed.status, 204);
 
-  const missing = await fetchJson(`${api.baseUrl}/planilleros/${created.data.id}`);
+  const missing = await fetchJson(`${api.baseUrl}/planilleros/${created.data.id}`, {
+    headers: authHeaders(adminSession),
+  });
   assert.equal(missing.response.status, 404);
 });
 
 test("tournament and team CRUD persists changes and allows deletion when unused", async () => {
+  const adminSession = await loginAs(api, "admin", "admin");
   const tournament = await fetchJson(`${api.baseUrl}/tournaments`, {
     method: "POST",
     body: JSON.stringify({
@@ -90,12 +110,14 @@ test("tournament and team CRUD persists changes and allows deletion when unused"
       startDate: "2026-07-01",
       endDate: "2026-09-30",
     }),
+    headers: authHeaders(adminSession),
   });
   assert.equal(tournament.response.status, 201);
 
   const updatedTournament = await fetchJson(`${api.baseUrl}/tournaments/${tournament.data.id}`, {
     method: "PATCH",
     body: JSON.stringify({ name: "Torneo CRUD Actualizado", status: "inactivo" }),
+    headers: authHeaders(adminSession),
   });
   assert.equal(updatedTournament.response.status, 200);
   assert.equal(updatedTournament.data.name, "Torneo CRUD Actualizado");
@@ -109,27 +131,38 @@ test("tournament and team CRUD persists changes and allows deletion when unused"
       city: "Pilar",
       status: "activo",
     }),
+    headers: authHeaders(adminSession),
   });
   assert.equal(team.response.status, 201);
 
   const updatedTeam = await fetchJson(`${api.baseUrl}/teams/${team.data.id}`, {
     method: "PATCH",
     body: JSON.stringify({ name: "Equipo CRUD Actualizado", shortName: "ECA" }),
+    headers: authHeaders(adminSession),
   });
   assert.equal(updatedTeam.response.status, 200);
   assert.equal(updatedTeam.data.shortName, "ECA");
 
-  const removedTeam = await fetch(`${api.baseUrl}/teams/${team.data.id}`, { method: "DELETE" });
+  const removedTeam = await fetch(`${api.baseUrl}/teams/${team.data.id}`, {
+    method: "DELETE",
+    headers: authHeaders(adminSession),
+  });
   const removedTournament = await fetch(`${api.baseUrl}/tournaments/${tournament.data.id}`, {
     method: "DELETE",
+    headers: authHeaders(adminSession),
   });
   assert.equal(removedTeam.status, 204);
   assert.equal(removedTournament.status, 204);
 });
 
 test("POST /api/matches creates the match, sheet and planillero assignment", async () => {
-  const tournaments = await fetchJson(`${api.baseUrl}/tournaments`);
-  const teams = await fetchJson(`${api.baseUrl}/teams`);
+  const adminSession = await loginAs(api, "admin", "admin");
+  const tournaments = await fetchJson(`${api.baseUrl}/tournaments`, {
+    headers: authHeaders(adminSession),
+  });
+  const teams = await fetchJson(`${api.baseUrl}/teams`, {
+    headers: authHeaders(adminSession),
+  });
   const tournament = tournaments.data.find((item) => item.name === "Torneo Senior A");
   const homeTeam = teams.data.find((item) => item.id === "t_1");
   const awayTeam = teams.data.find((item) => item.id === "t_2");
@@ -146,6 +179,7 @@ test("POST /api/matches creates the match, sheet and planillero assignment", asy
       awayTeamId: awayTeam.id,
       assignedPlanilleroId: "u_plan_2",
     }),
+    headers: authHeaders(adminSession),
   });
 
   assert.equal(created.response.status, 201);
@@ -154,38 +188,49 @@ test("POST /api/matches creates the match, sheet and planillero assignment", asy
   assert.equal(created.data.assignedPlanilleroId, "u_plan_2");
 
   const assigned = await fetchJson(
-    `${api.baseUrl}/matches?assignedPlanilleroId=u_plan_2`
+    `${api.baseUrl}/matches?assignedPlanilleroId=u_plan_2`,
+    { headers: authHeaders(adminSession) }
   );
   assert.equal(
     assigned.data.filter((item) => item.id === created.data.id).length,
     1
   );
 
-  const sheet = await fetchJson(`${api.baseUrl}/sheets/${created.data.id}`);
+  const sheet = await fetchJson(`${api.baseUrl}/sheets/${created.data.id}`, {
+    headers: authHeaders(adminSession),
+  });
   assert.equal(sheet.response.status, 200);
   assert.deepEqual(sheet.data.homePlayers, []);
   assert.deepEqual(sheet.data.awayPlayers, []);
 
-  const planillero = await fetchJson(`${api.baseUrl}/planilleros/u_plan_2`);
+  const planillero = await fetchJson(`${api.baseUrl}/planilleros/u_plan_2`, {
+    headers: authHeaders(adminSession),
+  });
   assert.equal(planillero.data.assignedMatchesCount, 3);
 
   const blockedTournamentDelete = await fetch(`${api.baseUrl}/tournaments/${tournament.id}`, {
     method: "DELETE",
+    headers: authHeaders(adminSession),
   });
   const blockedTeamDelete = await fetch(`${api.baseUrl}/teams/${homeTeam.id}`, {
     method: "DELETE",
+    headers: authHeaders(adminSession),
   });
   assert.equal(blockedTournamentDelete.status, 409);
   assert.equal(blockedTeamDelete.status, 409);
 });
 
 test("frontend match mutations persist score, observations and player fields in MySQL", async () => {
-  const initialSheet = await fetchJson(`${api.baseUrl}/sheets/m_1002`);
+  const session = await loginAs(api, "planillero", "planillero");
+  const initialSheet = await fetchJson(`${api.baseUrl}/sheets/m_1002`, {
+    headers: authHeaders(session),
+  });
   assert.equal(initialSheet.response.status, 200);
 
   const updatedScore = await fetchJson(`${api.baseUrl}/matches/m_1002/score`, {
     method: "PATCH",
     body: JSON.stringify({ score: { home: 3, away: 2 } }),
+    headers: authHeaders(session),
   });
   assert.equal(updatedScore.response.status, 200);
   assert.deepEqual(updatedScore.data.score, { home: 3, away: 2 });
@@ -220,11 +265,16 @@ test("frontend match mutations persist score, observations and player fields in 
   const savedSheet = await fetchJson(`${api.baseUrl}/sheets/m_1002`, {
     method: "PUT",
     body: JSON.stringify(updatedSheetPayload),
+    headers: authHeaders(session),
   });
   assert.equal(savedSheet.response.status, 200);
 
-  const persistedMatch = await fetchJson(`${api.baseUrl}/matches/m_1002`);
-  const persistedSheet = await fetchJson(`${api.baseUrl}/sheets/m_1002`);
+  const persistedMatch = await fetchJson(`${api.baseUrl}/matches/m_1002`, {
+    headers: authHeaders(session),
+  });
+  const persistedSheet = await fetchJson(`${api.baseUrl}/sheets/m_1002`, {
+    headers: authHeaders(session),
+  });
 
   assert.deepEqual(persistedMatch.data.score, { home: 3, away: 2 });
   assert.equal(
@@ -243,6 +293,7 @@ test("frontend match mutations persist score, observations and player fields in 
 });
 
 test("POST /api/sheets/:matchId/incidents and PATCH status keep reopen reason in sync", async () => {
+  const session = await loginAs(api, "planillero", "planillero");
   const incident = await fetchJson(`${api.baseUrl}/sheets/m_1001/incidents`, {
     method: "POST",
     body: JSON.stringify({
@@ -251,6 +302,7 @@ test("POST /api/sheets/:matchId/incidents and PATCH status keep reopen reason in
       team: "away",
       label: "Falta grave",
     }),
+    headers: authHeaders(session),
   });
   assert.equal(incident.response.status, 201);
   assert.equal(incident.data.incidents[0].label, "Falta grave");
@@ -261,6 +313,7 @@ test("POST /api/sheets/:matchId/incidents and PATCH status keep reopen reason in
       status: "reabierto",
       reopenReason: "Corregir expulsion cargada",
     }),
+    headers: authHeaders(session),
   });
   assert.equal(reopened.response.status, 200);
   assert.equal(reopened.data.reopenReason, "Corregir expulsion cargada");
@@ -268,8 +321,34 @@ test("POST /api/sheets/:matchId/incidents and PATCH status keep reopen reason in
   const finished = await fetchJson(`${api.baseUrl}/matches/m_1001/status`, {
     method: "PATCH",
     body: JSON.stringify({ status: "terminado" }),
+    headers: authHeaders(session),
   });
   assert.equal(finished.response.status, 200);
   assert.equal(finished.data.status, "terminado");
   assert.equal(finished.data.reopenReason, null);
+});
+
+test("planillero can only access assigned matches and cannot manage admin catalogs", async () => {
+  const session = await loginAs(api, "planillero", "planillero");
+
+  const ownMatches = await fetchJson(`${api.baseUrl}/matches`, {
+    headers: authHeaders(session),
+  });
+  assert.equal(ownMatches.response.status, 200);
+  assert.equal(ownMatches.data.length, 6);
+
+  const forbiddenList = await fetchJson(`${api.baseUrl}/matches?assignedPlanilleroId=u_plan_2`, {
+    headers: authHeaders(session),
+  });
+  assert.equal(forbiddenList.response.status, 403);
+
+  const forbiddenMatch = await fetchJson(`${api.baseUrl}/matches/m_3001`, {
+    headers: authHeaders(session),
+  });
+  assert.equal(forbiddenMatch.response.status, 403);
+
+  const forbiddenTournaments = await fetchJson(`${api.baseUrl}/tournaments`, {
+    headers: authHeaders(session),
+  });
+  assert.equal(forbiddenTournaments.response.status, 403);
 });

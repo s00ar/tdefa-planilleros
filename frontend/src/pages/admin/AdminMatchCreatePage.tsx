@@ -67,7 +67,7 @@ export function AdminMatchCreatePage() {
         if (!mounted) return;
         console.error("[matches] creation options load failed", error);
         toast.error("No se pudieron cargar las opciones del partido", {
-          description: error instanceof Error ? error.message : "Intentá nuevamente.",
+          description: error instanceof Error ? error.message : "IntentÃ¡ nuevamente.",
         });
       })
       .finally(() => {
@@ -98,12 +98,12 @@ export function AdminMatchCreatePage() {
       !assignedPlanilleroId
     ) {
       toast.error("Datos incompletos", {
-        description: "Completá todos los campos obligatorios del partido.",
+        description: "CompletÃ¡ todos los campos obligatorios del partido.",
       });
       return;
     }
     if (homeTeamId === awayTeamId) {
-      toast.error("Equipos inválidos", {
+      toast.error("Equipos invÃ¡lidos", {
         description: "El equipo local y visitante deben ser diferentes.",
       });
       return;
@@ -131,7 +131,7 @@ export function AdminMatchCreatePage() {
     } catch (error) {
       console.error("[matches] create failed", error);
       toast.error("No se pudo crear el partido", {
-        description: error instanceof Error ? error.message : "Intentá nuevamente.",
+        description: error instanceof Error ? error.message : "IntentÃ¡ nuevamente.",
       });
     } finally {
       submittingRef.current = false;
@@ -148,22 +148,25 @@ export function AdminMatchCreatePage() {
       </div>
 
       <div>
-        <h1 className="m-0 font-heading text-[40px] font-extrabold leading-[1.08] text-[#300000]">
+        <h1 className="m-0 font-heading text-[34px] font-extrabold leading-[1.08] text-[#300000] sm:text-[40px]">
           Registrar partido
         </h1>
-        <p className="mt-[12px] text-[19px] leading-[1.45] text-[#5e5e5e]">
-          Seleccioná un torneo, dos equipos registrados y un planillero activo.
+        <p className="mt-[12px] text-[17px] leading-[1.45] text-[#5e5e5e] sm:text-[19px]">
+          SeleccionÃ¡ un torneo, dos equipos registrados y un planillero activo.
         </p>
       </div>
 
       <div className="grid gap-[24px] xl:grid-cols-[minmax(0,1fr)_360px]">
-        <section className="rounded-[10px] bg-white p-[32px] shadow-[0_10px_30px_rgba(36,25,23,0.05)]">
+        <section className="rounded-[10px] bg-white p-[20px] shadow-[0_10px_30px_rgba(36,25,23,0.05)] sm:p-[32px]">
           <div className="grid gap-[24px] md:grid-cols-2">
             <Field label="Torneo" wide>
               <select className={inputClass} value={tournamentId} onChange={(event) => setTournamentId(event.target.value)}>
                 {tournaments.length === 0 ? <option value="">No hay torneos activos</option> : null}
                 {tournaments.map((item) => (
-                  <option key={item.id} value={item.id}>{item.name}{item.season ? ` · ${item.season}` : ""}</option>
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                    {item.season ? ` Â· ${item.season}` : ""}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -182,20 +185,28 @@ export function AdminMatchCreatePage() {
             <Field label="Equipo local">
               <select className={inputClass} value={homeTeamId} onChange={(event) => setHomeTeamId(event.target.value)}>
                 {teams.length === 0 ? <option value="">No hay equipos activos</option> : null}
-                {teams.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.shortName})</option>)}
+                {teams.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} ({item.shortName})
+                  </option>
+                ))}
               </select>
             </Field>
             <Field label="Equipo visitante">
               <select className={inputClass} value={awayTeamId} onChange={(event) => setAwayTeamId(event.target.value)}>
                 {teams.length === 0 ? <option value="">No hay equipos activos</option> : null}
-                {teams.map((item) => <option key={item.id} value={item.id}>{item.name} ({item.shortName})</option>)}
+                {teams.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} ({item.shortName})
+                  </option>
+                ))}
               </select>
             </Field>
           </div>
         </section>
 
         <aside className="space-y-[24px]">
-          <section className="rounded-[10px] bg-white p-[28px] shadow-[0_10px_30px_rgba(36,25,23,0.05)]">
+          <section className="rounded-[10px] bg-white p-[20px] shadow-[0_10px_30px_rgba(36,25,23,0.05)] sm:p-[28px]">
             <Field label="Planillero asignado">
               <select
                 className={inputClass}
@@ -207,19 +218,21 @@ export function AdminMatchCreatePage() {
                   <option value="">{loadingOptions ? "Cargando..." : "No hay planilleros activos"}</option>
                 ) : null}
                 {planilleros.map((item) => (
-                  <option key={item.id} value={item.id}>{item.name} (@{item.username})</option>
+                  <option key={item.id} value={item.id}>
+                    {item.name} (@{item.username})
+                  </option>
                 ))}
               </select>
             </Field>
             <p className="mt-[16px] text-[15px] leading-[1.5] text-[#5e5e5e]">
               {selectedPlanillero
-                ? `El partido aparecerá en la jornada de ${selectedPlanillero.name}.`
+                ? `El partido aparecerÃ¡ en la jornada de ${selectedPlanillero.name}.`
                 : "Para crear un partido debe existir al menos un planillero activo."}
             </p>
           </section>
 
-          <section className="rounded-[10px] border border-[#ead5d2] bg-[#fff8f7] p-[28px]">
-            <h2 className="m-0 text-[18px] font-semibold text-[#241917]">Catálogos requeridos</h2>
+          <section className="rounded-[10px] border border-[#ead5d2] bg-[#fff8f7] p-[20px] sm:p-[28px]">
+            <h2 className="m-0 text-[18px] font-semibold text-[#241917]">CatÃ¡logos requeridos</h2>
             <p className="mt-[12px] text-[15px] leading-[1.5] text-[#5e5e5e]">
               Debe existir al menos un torneo activo y dos equipos activos antes de registrar el partido.
             </p>
@@ -227,14 +240,18 @@ export function AdminMatchCreatePage() {
         </aside>
       </div>
 
-      <div className="flex items-center justify-end gap-[16px] border-t border-[#e5d6d3] pt-[24px]">
-        <button type="button" onClick={() => navigate("/partidos")} className="h-[52px] rounded-[8px] px-[24px] text-[16px] font-semibold text-[#5e5e5e] hover:bg-[#f3deda]">
+      <div className="flex flex-col gap-[12px] border-t border-[#e5d6d3] pt-[24px] sm:flex-row sm:items-center sm:justify-end sm:gap-[16px]">
+        <button
+          type="button"
+          onClick={() => navigate("/partidos")}
+          className="h-[52px] rounded-[8px] px-[24px] text-[16px] font-semibold text-[#5e5e5e] hover:bg-[#f3deda]"
+        >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={submitting || loadingOptions || planilleros.length === 0 || tournaments.length === 0 || teams.length < 2}
-          className="flex h-[52px] items-center gap-[12px] rounded-[8px] bg-[linear-gradient(135deg,#852318_0%,#300000_100%)] px-[24px] text-[16px] font-semibold text-white shadow-[0_18px_32px_rgba(48,0,0,0.2)] disabled:opacity-50"
+          className="flex h-[52px] items-center justify-center gap-[12px] rounded-[8px] bg-[linear-gradient(135deg,#852318_0%,#300000_100%)] px-[24px] text-[16px] font-semibold text-white shadow-[0_18px_32px_rgba(48,0,0,0.2)] disabled:opacity-50"
         >
           <CalendarPlus className="h-[19px] w-[19px]" />
           {submitting ? "Guardando..." : "Registrar partido"}

@@ -31,6 +31,11 @@ npm start
 
 The API is exposed under `/api`.
 
+Autenticacion demo:
+
+- `POST /api/auth/login`
+- usuarios semilla en MySQL: `admin/admin`, `planillero/planillero`, `carlos/carlos`, `maria/maria`
+
 ## Seed demo data
 
 ```bash

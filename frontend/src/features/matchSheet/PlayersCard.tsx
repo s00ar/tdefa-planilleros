@@ -44,7 +44,7 @@ export function PlayersCard({
         </div>
 
         <ScrollArea className="-mx-1">
-          <div className="grid gap-2 p-1">
+          <div className="grid gap-3 p-1">
             {players.length === 0 ? (
               <div className="rounded-xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
                 Sin jugadores cargados

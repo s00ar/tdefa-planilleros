@@ -13,3 +13,15 @@ backend/.git.hostinger-backup/
 *.log
 backend/backend-dev.log
 backend/backend-dev.err.log
+/.cdp-edge/
+/.tmp-edge-admin/
+/.tmp-edge-admin-2/
+/.tmp-edge-plan/
+/.tmp-edge-plan-2/
+/admin-desktop-ps.png
+/admin-mobile-ps.png
+/admin-mobile.png
+/incidencias-mobile-ps.png
+/partidos-mobile-ps.png
+/planilla-mobile-ps.png
+/planillero-desktop.png

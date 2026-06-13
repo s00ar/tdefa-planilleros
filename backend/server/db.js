@@ -115,9 +115,9 @@ const createAdminConnection = async (config) => {
 const upsertPlanillero = async (db, item) => {
   await db.execute(
     `INSERT INTO planilleros (
-      id, name, username, email, phone, dni, status,
+      id, name, username, email, phone, dni, status, role, password,
       assigned_matches_count, completed_matches_count, created_at_iso
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON DUPLICATE KEY UPDATE
       name = VALUES(name),
       username = VALUES(username),
@@ -125,6 +125,8 @@ const upsertPlanillero = async (db, item) => {
       phone = VALUES(phone),
       dni = VALUES(dni),
       status = VALUES(status),
+      role = VALUES(role),
+      password = VALUES(password),
       assigned_matches_count = VALUES(assigned_matches_count),
       completed_matches_count = VALUES(completed_matches_count),
       created_at_iso = VALUES(created_at_iso)`,
@@ -136,6 +138,8 @@ const upsertPlanillero = async (db, item) => {
       item.phone,
       item.dni,
       item.status,
+      item.role ?? "planillero",
+      item.password ?? item.username,
       item.assignedMatchesCount,
       item.completedMatchesCount,
       item.createdAtIso,
@@ -233,10 +237,32 @@ const createSchema = async (db) => {
       phone VARCHAR(80) NULL,
       dni VARCHAR(32) NULL,
       status ENUM('activo', 'inactivo') NOT NULL DEFAULT 'activo',
+      role ENUM('admin', 'planillero') NOT NULL DEFAULT 'planillero',
+      password VARCHAR(255) NOT NULL,
       assigned_matches_count INT NOT NULL DEFAULT 0,
       completed_matches_count INT NOT NULL DEFAULT 0,
       created_at_iso VARCHAR(32) NOT NULL
     )
+  `);
+
+  await db.query(`
+    ALTER TABLE planilleros
+    ADD COLUMN IF NOT EXISTS role ENUM('admin', 'planillero') NOT NULL DEFAULT 'planillero'
+    AFTER status
+  `);
+  await db.query(`
+    ALTER TABLE planilleros
+    ADD COLUMN IF NOT EXISTS password VARCHAR(255) NOT NULL DEFAULT ''
+    AFTER role
+  `);
+  await db.query(`
+    UPDATE planilleros
+    SET role = COALESCE(NULLIF(role, ''), 'planillero')
+  `);
+  await db.query(`
+    UPDATE planilleros
+    SET password = username
+    WHERE password IS NULL OR password = ''
   `);
 
   await db.query(`

@@ -30,7 +30,7 @@ function TopNavLink({ label, to, active }: { label: string; to: string; active: 
     <NavLink
       to={to}
       className={cn(
-        "relative py-[8px] text-[20px] font-medium leading-none text-[#4f4a49] transition [text-decoration:none] hover:text-[#570000]",
+        "relative py-[8px] text-[18px] font-medium leading-none text-[#4f4a49] transition [text-decoration:none] hover:text-[#570000] xl:text-[20px]",
         active && "font-bold text-[#241917]"
       )}
     >
@@ -97,11 +97,11 @@ function CreateShellItem({
     <NavLink
       to={to}
       className={cn(
-        "flex h-[72px] items-center gap-[20px] px-[22px] text-[22px] font-semibold [text-decoration:none]",
-        active ? "border-l-[4px] border-[#a53a2d] bg-[#e9eaeb] text-[#800000]" : "text-[#5e5e5e] opacity-70"
+        "flex min-h-[64px] items-center gap-[18px] rounded-[8px] px-[18px] text-[18px] font-semibold [text-decoration:none] lg:h-[72px] lg:rounded-none lg:px-[22px] lg:text-[22px]",
+        active ? "bg-[#e9eaeb] text-[#800000] lg:border-l-[4px] lg:border-[#a53a2d]" : "text-[#5e5e5e] opacity-80"
       )}
     >
-      <span className="grid h-[28px] w-[28px] place-items-center">{icon}</span>
+      <span className="grid h-[26px] w-[26px] place-items-center">{icon}</span>
       <span>{label}</span>
     </NavLink>
   );
@@ -116,18 +116,18 @@ function UserMenu() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          aria-label="Abrir menú de usuario"
-          className="h-[48px] w-[48px] overflow-hidden rounded-full border border-[#dec0bb] shadow-sm transition hover:border-[#570000]/40"
+          aria-label="Abrir menÃº de usuario"
+          className="h-[46px] w-[46px] overflow-hidden rounded-full border border-[#dec0bb] shadow-sm transition hover:border-[#570000]/40 sm:h-[48px] sm:w-[48px]"
         >
           <Avatar className="h-full w-full">
-            <AvatarFallback className="bg-[#300000] text-[18px] font-bold text-[#ffffff]">
+            <AvatarFallback className="bg-[#300000] text-[16px] font-bold text-[#ffffff] sm:text-[18px]">
               {(user?.name ?? "A").slice(0, 1).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={10} className="w-[240px]">
-        <DropdownMenuLabel>Sesión</DropdownMenuLabel>
+        <DropdownMenuLabel>SesiÃ³n</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled>{user?.name ?? "Administrador"}</DropdownMenuItem>
         <DropdownMenuItem disabled>{user?.username ?? "-"}</DropdownMenuItem>
@@ -140,17 +140,66 @@ function UserMenu() {
           }}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          Cerrar sesión
+          Cerrar sesiÃ³n
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
+function MobileBottomNav({ pathname }: { pathname: string }) {
+  const items = [
+    {
+      to: "/partidos",
+      label: "Partidos",
+      icon: <Grid2X2 className="h-[20px] w-[20px]" />,
+      active: isTopNavActive(pathname, "partidos"),
+    },
+    {
+      to: "/admin/planilleros",
+      label: "Planilleros",
+      icon: <Users className="h-[20px] w-[20px]" />,
+      active: pathname.startsWith("/admin/planilleros"),
+    },
+    {
+      to: "/historial",
+      label: "Historial",
+      icon: <History className="h-[20px] w-[20px]" />,
+      active: pathname.startsWith("/historial"),
+    },
+    {
+      to: "/configuracion",
+      label: "Ajustes",
+      icon: <Settings className="h-[20px] w-[20px]" />,
+      active: pathname.startsWith("/configuracion"),
+    },
+  ];
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-[#dec0bb]/20 bg-[#ffffff]/95 px-2 py-2 backdrop-blur lg:hidden">
+      <div className="grid grid-cols-4 gap-1">
+        {items.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={cn(
+              "grid min-h-[56px] place-items-center gap-[4px] rounded-[10px] px-1 [text-decoration:none]",
+              item.active ? "bg-[#570000] text-[#ffffff]" : "text-[#5e5e5e]"
+            )}
+          >
+            {item.icon}
+            <span className="text-[10px] font-semibold">{item.label}</span>
+          </NavLink>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
 export function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [desktopShell, setDesktopShell] = useState(true);
+  const [desktopShell, setDesktopShell] = useState(false);
   const [adminQuery, setAdminQuery] = useState("");
   const createShell = location.pathname === "/admin/planilleros/nuevo";
   const editShell = /^\/admin\/planilleros\/[^/]+\/editar$/.test(location.pathname);
@@ -158,7 +207,7 @@ export function AdminLayout() {
   const formShell = createShell || editShell || matchCreateShell;
 
   useEffect(() => {
-    document.title = "Administración de Planilleros - TDEFA Digital";
+    document.title = "AdministraciÃ³n de Planilleros - TDEFA Digital";
   }, []);
 
   useEffect(() => {
@@ -169,6 +218,56 @@ export function AdminLayout() {
   }, []);
 
   if (formShell) {
+    if (!desktopShell) {
+      return (
+        <div className="min-h-dvh bg-[#f1f2f4] font-sans text-[#241917]">
+          <header className="sticky top-0 z-40 border-b border-[#e5d6d3] bg-[#f8f9fa]/95 px-4 py-4 backdrop-blur sm:px-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <NavLink
+                  to="/"
+                  aria-label="Ir al inicio"
+                  className="font-heading text-[30px] font-extrabold leading-none text-[#300000] [text-decoration:none]"
+                >
+                  TDEFA
+                </NavLink>
+                <p className="mt-2 text-[14px] font-semibold text-[#5e5e5e]">GestiÃ³n administrativa</p>
+              </div>
+              <UserMenu />
+            </div>
+
+            <nav className="mt-4 grid gap-2 sm:grid-cols-3">
+              <CreateShellItem
+                to="/admin/planilleros"
+                icon={<Users className="h-[22px] w-[22px]" />}
+                label="Planilleros"
+                active={!matchCreateShell}
+              />
+              <CreateShellItem
+                to="/partidos"
+                icon={<CalendarDays className="h-[22px] w-[22px]" />}
+                label="Partidos"
+                active={matchCreateShell}
+              />
+              <CreateShellItem
+                to="/historial"
+                icon={<History className="h-[22px] w-[22px]" />}
+                label="Historial"
+              />
+            </nav>
+          </header>
+
+          <main className="px-4 py-6 pb-[92px] sm:px-6">
+            <div className="mx-auto max-w-[1200px]">
+              <Outlet context={{ adminQuery, setAdminQuery }} />
+            </div>
+          </main>
+
+          <MobileBottomNav pathname={location.pathname} />
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-[100vh] bg-[#f1f2f4] font-sans text-[#241917]">
         <aside className="fixed left-0 top-0 z-50 flex h-[100vh] w-[320px] flex-col bg-[#f8f9fa] px-[20px] py-[40px]">
@@ -181,7 +280,7 @@ export function AdminLayout() {
               TDEFA
             </NavLink>
             <p className="mt-[12px] text-[20px] font-semibold leading-none text-[#5e5e5e]">
-              Gestión administrativa
+              GestiÃ³n administrativa
             </p>
           </div>
 
@@ -233,7 +332,7 @@ export function AdminLayout() {
               />
             </div>
             <span className="truncate font-heading text-[32px] font-extrabold leading-none text-[#300000]">
-              Gestión de planilleros
+              GestiÃ³n de planilleros
             </span>
           </div>
 
@@ -259,42 +358,53 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-dvh bg-[#f8f9fa] font-sans text-[#1a1c1e]">
-      <header className="fixed left-0 top-0 z-50 flex h-[100px] w-full items-center justify-between bg-[#f8f9fa] px-[40px] shadow-[0_1px_8px_rgba(36,25,23,0.08)]">
-        <div className="flex items-center gap-[50px]">
-          <NavLink
-            to="/"
-            aria-label="Ir al inicio"
-            className="font-heading text-[40px] font-extrabold leading-none text-[#570000] [text-decoration:none]"
-          >
-            TDEFA Digital
-          </NavLink>
+      <header className="sticky top-0 z-50 border-b border-[#e5d6d3] bg-[#f8f9fa]/95 shadow-[0_1px_8px_rgba(36,25,23,0.08)] backdrop-blur">
+        <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-4 px-4 py-4 sm:px-6 lg:px-10 lg:py-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-6 lg:gap-[50px]">
+              <NavLink
+                to="/"
+                aria-label="Ir al inicio"
+                className="font-heading text-[28px] font-extrabold leading-none text-[#570000] [text-decoration:none] sm:text-[34px] lg:text-[40px]"
+              >
+                TDEFA Digital
+              </NavLink>
 
-          {desktopShell ? (
-            <nav className="flex items-center gap-[30px]">
-              <TopNavLink label="Partidos" to="/partidos" active={isTopNavActive(location.pathname, "partidos")} />
-              <TopNavLink label="Torneos" to="/torneos" active={isTopNavActive(location.pathname, "torneos")} />
-              <TopNavLink label="Equipos" to="/equipos" active={isTopNavActive(location.pathname, "equipos")} />
-              <TopNavLink label="Historial" to="/historial" active={isTopNavActive(location.pathname, "historial")} />
-            </nav>
+              {desktopShell ? (
+                <nav className="hidden items-center gap-[24px] lg:flex xl:gap-[30px]">
+                  <TopNavLink label="Partidos" to="/partidos" active={isTopNavActive(location.pathname, "partidos")} />
+                  <TopNavLink label="Torneos" to="/torneos" active={isTopNavActive(location.pathname, "torneos")} />
+                  <TopNavLink label="Equipos" to="/equipos" active={isTopNavActive(location.pathname, "equipos")} />
+                  <TopNavLink label="Historial" to="/historial" active={isTopNavActive(location.pathname, "historial")} />
+                </nav>
+              ) : null}
+            </div>
+
+            <div className="flex items-center gap-3 sm:gap-4 lg:gap-[20px]">
+              <NavLink
+                to="/notificaciones"
+                aria-label="Notificaciones"
+                className="grid h-[40px] w-[40px] place-items-center text-[#5e5e5e] transition [text-decoration:none] hover:text-[#300000]"
+              >
+                <Bell className="h-[22px] w-[22px]" />
+              </NavLink>
+              <NavLink
+                to="/configuracion"
+                aria-label="ConfiguraciÃ³n"
+                className="grid h-[40px] w-[40px] place-items-center text-[#5e5e5e] transition [text-decoration:none] hover:text-[#300000]"
+              >
+                <Settings className="h-[22px] w-[22px]" />
+              </NavLink>
+              <UserMenu />
+            </div>
+          </div>
+
+          {!desktopShell ? (
+            <div className="rounded-[12px] bg-[#fff0ee] px-4 py-3">
+              <p className="text-[13px] font-bold uppercase tracking-[0.14em] text-[#852318]">Panel administrador</p>
+              <p className="mt-1 text-[15px] text-[#57423e]">Acceso rÃ¡pido a planilleros, partidos e historial.</p>
+            </div>
           ) : null}
-        </div>
-
-        <div className="flex items-center gap-[20px]">
-          <NavLink
-            to="/notificaciones"
-            aria-label="Notificaciones"
-            className="grid h-[40px] w-[40px] place-items-center text-[#5e5e5e] transition [text-decoration:none] hover:text-[#300000]"
-          >
-            <Bell className="h-[24px] w-[24px]" />
-          </NavLink>
-          <NavLink
-            to="/configuracion"
-            aria-label="Configuración"
-            className="grid h-[40px] w-[40px] place-items-center text-[#5e5e5e] transition [text-decoration:none] hover:text-[#300000]"
-          >
-            <Settings className="h-[24px] w-[24px]" />
-          </NavLink>
-          <UserMenu />
         </div>
       </header>
 
@@ -348,39 +458,20 @@ export function AdminLayout() {
                 className="mx-[10px] flex h-[50px] w-[calc(100%-20px)] appearance-none items-center gap-[16px] rounded-[8px] border-0 bg-transparent px-[16px] text-[15px] font-medium text-[#57423e] transition hover:bg-[#e9eaeb]"
               >
                 <LogOut className="h-[24px] w-[24px]" />
-                Cerrar sesión
+                Cerrar sesiÃ³n
               </button>
             </div>
           </div>
         </aside>
       ) : null}
 
-      <main className={cn("min-h-[100vh] pt-[100px]", desktopShell ? "pl-[320px]" : "pb-[80px]")}>
-        <div className="mx-auto max-w-[1280px] p-[40px]">
+      <main className={cn("min-h-[100vh]", desktopShell ? "pl-[320px]" : "pb-[88px]")}>
+        <div className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 sm:py-8 lg:p-[40px]">
           <Outlet context={{ adminQuery, setAdminQuery }} />
         </div>
       </main>
 
-      {!desktopShell ? (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-[64px] items-center justify-around border-t border-[#dec0bb]/20 bg-[#ffffff] px-[16px]">
-          <NavLink to="/partidos" className="grid place-items-center gap-[4px] text-[#570000] [text-decoration:none]">
-            <Grid2X2 className="h-[20px] w-[20px]" />
-            <span className="text-[10px] font-bold">Partidos</span>
-          </NavLink>
-          <NavLink to="/admin/planilleros" className="grid place-items-center gap-[4px] text-[#5e5e5e] [text-decoration:none]">
-            <Users className="h-[20px] w-[20px]" />
-            <span className="text-[10px]">Planilleros</span>
-          </NavLink>
-          <NavLink to="/historial" className="grid place-items-center gap-[4px] text-[#5e5e5e] [text-decoration:none]">
-            <CalendarDays className="h-[20px] w-[20px]" />
-            <span className="text-[10px]">Historial</span>
-          </NavLink>
-          <NavLink to="/notificaciones" className="grid place-items-center gap-[4px] text-[#5e5e5e] [text-decoration:none]">
-            <ShieldUser className="h-[20px] w-[20px]" />
-            <span className="text-[10px]">Avisos</span>
-          </NavLink>
-        </nav>
-      ) : null}
+      {!desktopShell ? <MobileBottomNav pathname={location.pathname} /> : null}
     </div>
   );
 }

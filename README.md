@@ -26,3 +26,5 @@ Variables necesarias en Hostinger:
 Para el frontend, usar:
 
 - `VITE_API_URL=https://lightseagreen-baboon-179690.hostingersite.com/api`
+
+La regla operativa es simple: tanto el frontend local como el de produccion deben consultar siempre la API real del backend, que a su vez usa la base MySQL real configurada en ese entorno.
