@@ -58,11 +58,23 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
 
   if (!response.ok) {
     let message = "No se pudo completar la solicitud";
+    const contentType = response.headers.get("content-type") ?? "";
     try {
-      const payload = (await response.json()) as { message?: string };
-      message = payload.message ?? message;
+      if (contentType.includes("application/json")) {
+        const payload = (await response.json()) as { message?: string };
+        message = payload.message ?? message;
+      } else {
+        const text = await response.text();
+        if (response.status === 404 && path === "/auth/login") {
+          message = "El backend desplegado no tiene habilitado el login. Falta actualizar o reiniciar la API.";
+        } else if (text.trim()) {
+          message = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        }
+      }
     } catch {
-      // ignore invalid JSON errors and keep generic message
+      if (response.status === 404 && path === "/auth/login") {
+        message = "El backend desplegado no tiene habilitado el login. Falta actualizar o reiniciar la API.";
+      }
     }
     console.error("[api] response error", {
       requestId,

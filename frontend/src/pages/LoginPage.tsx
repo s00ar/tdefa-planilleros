@@ -66,8 +66,10 @@ export function LoginPage() {
             navigate(nextSession.user.role === "admin" ? "/admin/planilleros" : "/partidos", {
               replace: true,
             });
-          } catch {
-            setAuthError("Credenciales incorrectas. Verifique sus datos.");
+          } catch (error) {
+            setAuthError(
+              error instanceof Error ? error.message : "No se pudo iniciar sesión. Revisá la API e intentá nuevamente."
+            );
           }
         })}
       >
