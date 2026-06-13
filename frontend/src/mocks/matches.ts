@@ -55,6 +55,6 @@ export const mockMatches: MatchRef[] = [
     awayTeam: { id: "t_8", name: "Ferro", shortName: "Ferro" },
     score: { home: 1, away: 1 },
     assignedPlanilleroId: "u_plan_1",
-    reopenReason: "Falta firma del capitan",
+    reopenReason: "Falta firma del capit?n",
   },
 ];

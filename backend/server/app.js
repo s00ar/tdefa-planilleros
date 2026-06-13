@@ -89,7 +89,7 @@ export const createApp = () => {
       const token = getBearerToken(req);
       const session = parseSessionToken(token);
       if (!session?.sub) {
-        res.status(401).json({ message: "Sesion invalida o vencida" });
+        res.status(401).json({ message: "Sesión inválida o vencida" });
         return;
       }
 
@@ -104,11 +104,11 @@ export const createApp = () => {
       const user = rows[0];
 
       if (!user) {
-        res.status(401).json({ message: "Sesion invalida o vencida" });
+        res.status(401).json({ message: "Sesión inválida o vencida" });
         return;
       }
       if (user.status !== "activo") {
-        res.status(403).json({ message: "El usuario esta inactivo" });
+        res.status(403).json({ message: "El usuario está inactivo" });
         return;
       }
 
@@ -161,7 +161,7 @@ export const createApp = () => {
       return match;
     }
 
-    res.status(403).json({ message: "No tenes acceso a este partido" });
+    res.status(403).json({ message: "No tenés acceso a este partido" });
     return null;
   };
 
@@ -178,29 +178,29 @@ export const createApp = () => {
     "/api/auth/login",
     asyncHandler(async (req, res) => {
       const pool = getPool();
-      const username = String(req.body.username ?? "").trim().toLowerCase();
+      const identifier = String(req.body.username ?? "").trim().toLowerCase();
       const password = String(req.body.password ?? "");
 
-      if (!username || !password) {
-        res.status(400).json({ message: "Usuario y contrasena son obligatorios" });
+      if (!identifier || !password) {
+        res.status(400).json({ message: "Usuario y contraseña son obligatorios" });
         return;
       }
 
       const [rows] = await pool.execute(
         `SELECT id, name, username, status, role, password
          FROM planilleros
-         WHERE LOWER(username) = ?
+         WHERE LOWER(username) = ? OR LOWER(email) = ?
          LIMIT 1`,
-        [username]
+        [identifier, identifier]
       );
       const user = rows[0];
 
       if (!user || user.password !== password) {
-        res.status(401).json({ message: "Usuario o contrasena invalidos" });
+        res.status(401).json({ message: "Usuario o contraseña inválidos" });
         return;
       }
       if (user.status !== "activo") {
-        res.status(403).json({ message: "El usuario esta inactivo" });
+        res.status(403).json({ message: "El usuario está inactivo" });
         return;
       }
 
@@ -279,9 +279,14 @@ export const createApp = () => {
       const body = req.body;
       const name = String(body.name ?? "").trim();
       const username = String(body.username ?? "").trim();
+      const requestedPassword = String(body.password ?? "").trim();
 
       if (!name || !username) {
         res.status(400).json({ message: "Nombre y usuario son obligatorios" });
+        return;
+      }
+      if (body.password !== undefined && requestedPassword.length < 3) {
+        res.status(400).json({ message: "La contraseña debe tener al menos 3 caracteres" });
         return;
       }
 
@@ -294,7 +299,7 @@ export const createApp = () => {
         dni: body.dni ?? null,
         status: body.status === "inactivo" ? "inactivo" : "activo",
         role: "planillero",
-        password: String(body.password ?? username).trim() || username,
+        password: requestedPassword || username,
         assignedMatchesCount: Number(body.assignedMatchesCount ?? 0),
         completedMatchesCount: Number(body.completedMatchesCount ?? 0),
         createdAtIso: new Date().toISOString().slice(0, 10),
@@ -357,15 +362,22 @@ export const createApp = () => {
         return;
       }
 
+      const requestedPassword =
+        req.body.password === undefined ? undefined : String(req.body.password).trim();
       const updated = { ...current, ...req.body };
       if (!String(updated.name ?? "").trim() || !String(updated.username ?? "").trim()) {
         res.status(400).json({ message: "Nombre y usuario son obligatorios" });
+        return;
+      }
+      if (requestedPassword !== undefined && requestedPassword.length < 3) {
+        res.status(400).json({ message: "La contraseña debe tener al menos 3 caracteres" });
         return;
       }
 
       await pool.execute(
         `UPDATE planilleros
         SET name = ?, username = ?, email = ?, phone = ?, dni = ?, status = ?,
+            password = COALESCE(?, password),
             assigned_matches_count = ?, completed_matches_count = ?
         WHERE id = ?`,
         [
@@ -375,6 +387,7 @@ export const createApp = () => {
           updated.phone,
           updated.dni,
           updated.status,
+          requestedPassword ?? null,
           updated.assignedMatchesCount,
           updated.completedMatchesCount,
           req.params.id,

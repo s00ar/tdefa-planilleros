@@ -67,7 +67,7 @@ export function IncidentsCard({
             <SelectContent>
               <SelectItem value="gol">Gol</SelectItem>
               <SelectItem value="amarilla">Amarilla</SelectItem>
-              <SelectItem value="expulsion">Expulsion</SelectItem>
+              <SelectItem value="expulsion">Expulsi?n</SelectItem>
               <SelectItem value="cambio">Cambio</SelectItem>
               <SelectItem value="nota">Nota</SelectItem>
             </SelectContent>

@@ -79,7 +79,7 @@ export const seedPlanilleros = [
   },
   {
     id: "u_plan_3",
-    name: "Maria Lopez",
+    name: "María López",
     username: "maria",
     email: "maria@tdefa.local",
     phone: "+54 11 5555-0003",
@@ -93,7 +93,7 @@ export const seedPlanilleros = [
   },
   {
     id: "u_plan_4",
-    name: "Agustin Pereira",
+    name: "Agustín Pereira",
     username: "agustin",
     email: "agustin@tdefa.local",
     phone: "+54 11 5555-0004",
@@ -144,7 +144,7 @@ export const seedMatches = [
     time: "16:00",
     venue: "Sede Pilar",
     pitch: "Cancha 3",
-    homeTeam: { id: "t_5", name: "San Martin", shortName: "SAM" },
+    homeTeam: { id: "t_5", name: "San Martín", shortName: "SAM" },
     awayTeam: { id: "t_6", name: "Atlas FC", shortName: "ATL" },
     score: { home: 2, away: 1 },
     assignedPlanilleroId: "u_plan_1",
@@ -176,7 +176,7 @@ export const seedMatches = [
     awayTeam: { id: "t_8", name: "Ferro", shortName: "FER" },
     score: { home: 1, away: 1 },
     assignedPlanilleroId: "u_plan_1",
-    reopenReason: "Falta firma del capitan",
+    reopenReason: "Falta firma del capitán",
   },
   {
     id: "m_2002",
@@ -222,7 +222,7 @@ export const seedMatches = [
   },
   {
     id: "m_4001",
-    tournament: "Futbol 7",
+    tournament: "Fútbol 7",
     status: "terminado",
     dateIso: "2026-06-03",
     time: "20:00",
@@ -236,7 +236,7 @@ export const seedMatches = [
   },
   {
     id: "m_4002",
-    tournament: "Futbol 7",
+    tournament: "Fútbol 7",
     status: "reabierto",
     dateIso: "2026-06-05",
     time: "21:15",
@@ -279,7 +279,7 @@ export const seedSheets = {
     awayPrefix: "atl",
     homeNames: ["J. Mendez", "K. Duarte", "L. Medina", "M. Sosa", "N. Vera"],
     awayNames: ["R. Ledesma", "S. Ortiz", "T. Ruiz", "U. Prieto", "V. Benitez"],
-    observations: "Planilla finalizada y lista para auditoria.",
+    observations: "Planilla finalizada y lista para auditoría.",
     incidents: [
       { id: "i_3", minute: 18, type: "gol", team: "home", label: "J. Mendez" },
       { id: "i_4", minute: 51, type: "gol", team: "away", label: "R. Ledesma" },
@@ -302,8 +302,8 @@ export const seedSheets = {
     awayPrefix: "fer",
     homeNames: ["P. Blanco", "Q. Rios", "R. Gomez", "S. Duarte", "T. Paredes"],
     awayNames: ["A. Rossi", "B. Soto", "C. Nievas", "D. Coronel", "E. Salas"],
-    observations: "Reabrir para corregir firma pendiente del capitan.",
-    incidents: [{ id: "i_6", minute: 63, type: "nota", team: "home", label: "Falta firma del capitan" }],
+    observations: "Reabrir para corregir firma pendiente del capitán.",
+    incidents: [{ id: "i_6", minute: 63, type: "nota", team: "home", label: "Falta firma del capitán" }],
     updatedAtIso: "2026-06-08T16:40:00.000Z",
   }),
   m_2002: buildSheet({
@@ -355,7 +355,7 @@ export const seedSheets = {
     awayPrefix: "del",
     homeNames: ["K. Flores", "L. Roldan", "M. Ledesma", "N. Quintana", "O. Perez"],
     awayNames: ["P. Caruso", "Q. Perrone", "R. Tula", "S. Herrera", "T. Mateo"],
-    observations: "Partido reabierto para ajustar una expulsion cargada al equipo equivocado.",
+    observations: "Partido reabierto para ajustar una expulsión cargada al equipo equivocado.",
     incidents: [
       { id: "i_10", minute: 61, type: "expulsion", team: "away", label: "Q. Perrone" },
     ],

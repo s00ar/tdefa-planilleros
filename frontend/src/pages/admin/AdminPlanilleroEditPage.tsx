@@ -45,6 +45,7 @@ export function AdminPlanilleroEditPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [dni, setDni] = useState("");
@@ -104,12 +105,14 @@ export function AdminPlanilleroEditPage() {
       const updated = await planillerosService.update(item.id, {
         name: fullName,
         username: username.trim(),
+        password: password.trim() || undefined,
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
         dni: dni.trim() || undefined,
         status,
       });
       setItem(updated);
+      setPassword("");
       console.info("[planilleros] update completed", { id: updated.id, username: updated.username });
       toast.success("Cambios guardados", { description: updated.name });
     } catch (saveError) {
@@ -186,6 +189,15 @@ export function AdminPlanilleroEditPage() {
               <input className={inputClass} onChange={(event) => setUsername(event.target.value)} value={username} />
             </EditField>
 
+            <EditField label="Nueva contraseña">
+              <input
+                className={inputClass}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Dejar vacía para conservar la actual"
+                value={password}
+              />
+            </EditField>
+
             <EditField label="Email">
               <input className={inputClass} onChange={(event) => setEmail(event.target.value)} type="email" value={email} />
             </EditField>
@@ -242,6 +254,10 @@ export function AdminPlanilleroEditPage() {
               <div className="flex flex-col gap-[4px] sm:flex-row sm:items-center sm:justify-between sm:gap-[16px]">
                 <dt>Usuario</dt>
                 <dd className="font-medium text-[#241917]">{username || "-"}</dd>
+              </div>
+              <div className="flex flex-col gap-[4px] sm:flex-row sm:items-center sm:justify-between sm:gap-[16px]">
+                <dt>Contraseña</dt>
+                <dd className="font-medium text-[#241917]">{password ? "Se actualizará al guardar" : "Sin cambios"}</dd>
               </div>
               <div className="flex flex-col gap-[4px] sm:flex-row sm:items-center sm:justify-between sm:gap-[16px]">
                 <dt>Asignados</dt>

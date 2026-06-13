@@ -13,3 +13,10 @@ export type Planillero = {
   createdAtIso: string;
 };
 
+export type PlanilleroPayload = Omit<Planillero, "id" | "createdAtIso"> & {
+  password?: string;
+};
+
+export type PlanilleroPatch = Partial<Omit<Planillero, "id" | "createdAtIso">> & {
+  password?: string;
+};

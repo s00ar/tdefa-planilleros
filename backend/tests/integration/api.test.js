@@ -42,6 +42,7 @@ test("planillero CRUD persists each creation exactly once", async () => {
   const payload = {
     name: "Alta Integracion",
     username: "alta.integracion",
+    password: "clave123",
     email: "alta.integracion@tdefa.local",
     phone: "+54 11 5555 0101",
     dni: "39000101",
@@ -73,12 +74,25 @@ test("planillero CRUD persists each creation exactly once", async () => {
 
   const updated = await fetchJson(`${api.baseUrl}/planilleros/${created.data.id}`, {
     method: "PATCH",
-    body: JSON.stringify({ status: "inactivo", phone: "+54 11 5555 0202" }),
+    body: JSON.stringify({ phone: "+54 11 5555 0202", password: "clave456" }),
     headers: authHeaders(adminSession),
   });
   assert.equal(updated.response.status, 200);
-  assert.equal(updated.data.status, "inactivo");
   assert.equal(updated.data.phone, "+54 11 5555 0202");
+
+  const loginWithEmail = await fetchJson(`${api.baseUrl}/auth/login`, {
+    method: "POST",
+    body: JSON.stringify({ username: payload.email, password: "clave456" }),
+  });
+  assert.equal(loginWithEmail.response.status, 200);
+
+  const deactivated = await fetchJson(`${api.baseUrl}/planilleros/${created.data.id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status: "inactivo" }),
+    headers: authHeaders(adminSession),
+  });
+  assert.equal(deactivated.response.status, 200);
+  assert.equal(deactivated.data.status, "inactivo");
 
   const duplicate = await fetchJson(`${api.baseUrl}/planilleros`, {
     method: "POST",

@@ -106,6 +106,7 @@ const resolveConnectionTransport = async (config) => {
 const createAdminConnection = async (config) => {
   const connectionTransport = await resolveConnectionTransport(config);
   return mysql.createConnection({
+    charset: "utf8mb4",
     ...connectionTransport,
     user: config.user,
     password: config.password,
@@ -386,6 +387,7 @@ const connectPool = async (config) => {
   await closePool();
   const connectionTransport = await resolveConnectionTransport(config);
   pool = mysql.createPool({
+    charset: "utf8mb4",
     ...connectionTransport,
     user: config.user,
     password: config.password,

@@ -7,11 +7,11 @@ import { useToast } from "@/hooks/useToast";
 const copy: Record<string, { title: string; subtitle: string }> = {
   torneos: {
     title: "Torneos",
-    subtitle: "Vista de consulta para torneos disponibles. Esta seccion queda lista para conectar datos reales.",
+    subtitle: "Vista de consulta para torneos disponibles. Esta secci?n queda lista para conectar datos reales.",
   },
   equipos: {
     title: "Equipos",
-    subtitle: "Vista de consulta para equipos participantes. Esta seccion queda lista para conectar datos reales.",
+    subtitle: "Vista de consulta para equipos participantes. Esta secci?n queda lista para conectar datos reales.",
   },
   reglamento: {
     title: "Reglamento oficial",
@@ -22,8 +22,8 @@ const copy: Record<string, { title: string; subtitle: string }> = {
     subtitle: "Centro de avisos operativos del sistema.",
   },
   configuracion: {
-    title: "Configuracion",
-    subtitle: "Preferencias de cuenta y parametros de la plataforma.",
+    title: "Configuraci?n",
+    subtitle: "Preferencias de cuenta y par?metros de la plataforma.",
   },
 };
 
@@ -37,20 +37,20 @@ export function SupportSectionPage({ section }: { section: keyof typeof copy }) 
   const notifications = [
     {
       id: "planillero",
-      title: "Gestion de planilleros",
+      title: "Gesti?n de planilleros",
       detail: "Revisa altas, bajas y cambios de estado desde el panel administrativo.",
       to: "/admin/planilleros",
     },
     {
       id: "match",
       title: "Planilla reabierta",
-      detail: "Cancha 5 requiere correccion por firma de capitan faltante.",
+      detail: "Cancha 5 requiere correcci?n por firma de capit?n faltante.",
       to: "/partidos",
     },
     {
       id: "incident",
       title: "Registro de incidencia",
-      detail: "Podes cargar un evento puntual y asociarlo a la planilla del partido.",
+      detail: "Pod?s cargar un evento puntual y asociarlo a la planilla del partido.",
       to: "/incidencias/nueva",
     },
   ];
@@ -85,7 +85,7 @@ export function SupportSectionPage({ section }: { section: keyof typeof copy }) 
                 type="button"
                 onClick={() => {
                   setReadIds(notifications.map((item) => item.id));
-                  toast.success("Notificaciones marcadas como leidas");
+                  toast.success("Notificaciones marcadas como le?das");
                 }}
                 className="flex h-[44px] items-center gap-[10px] rounded-[4px] border-0 bg-[#e9eaeb] px-[18px] text-[15px] font-semibold text-[#241917]"
               >
@@ -116,7 +116,7 @@ export function SupportSectionPage({ section }: { section: keyof typeof copy }) 
                         onClick={() => setReadIds((current) => [...current, item.id])}
                         className="h-[42px] rounded-[4px] border-0 bg-[#570000] px-[16px] text-[14px] font-semibold text-[#ffffff]"
                       >
-                        Marcar leida
+                        Marcar le?da
                       </button>
                     ) : (
                       <span className="text-[14px] font-semibold text-[#5e5e5e]">Leida</span>
@@ -136,7 +136,7 @@ export function SupportSectionPage({ section }: { section: keyof typeof copy }) 
             <SettingToggle
               checked={syncEnabled}
               icon={<Settings className="h-[22px] w-[22px]" />}
-              label="Sincronizacion en tiempo real"
+              label="Sincronizaci?n en tiempo real"
               onToggle={() => setSyncEnabled((current) => !current)}
             />
             <SettingToggle

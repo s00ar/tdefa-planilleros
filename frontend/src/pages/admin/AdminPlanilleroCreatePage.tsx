@@ -25,6 +25,7 @@ export function AdminPlanilleroCreatePage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [dni, setDni] = useState("");
@@ -62,6 +63,7 @@ export function AdminPlanilleroCreatePage() {
       const created = await planillerosService.create({
         name,
         username: finalUsername,
+        password: password.trim() || undefined,
         email: email.trim() || undefined,
         phone: phone.trim() || undefined,
         dni: dni.trim() || undefined,
@@ -117,6 +119,11 @@ export function AdminPlanilleroCreatePage() {
             <div>
               <FieldLabel>Usuario</FieldLabel>
               <input value={username} onChange={(event) => setUsername(event.target.value)} className={inputClass} placeholder={suggestedUsername || "Ej. carlos.rodriguez"} type="text" />
+            </div>
+
+            <div>
+              <FieldLabel>Contraseña inicial</FieldLabel>
+              <input value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} placeholder="Si queda vacía, usa el usuario" type="text" />
             </div>
 
             <div>
@@ -182,6 +189,10 @@ export function AdminPlanilleroCreatePage() {
               <div className="flex flex-col gap-[4px] sm:flex-row sm:items-center sm:justify-between sm:gap-[16px]">
                 <dt>Email</dt>
                 <dd className="font-medium text-[#241917]">{email.trim() || "-"}</dd>
+              </div>
+              <div className="flex flex-col gap-[4px] sm:flex-row sm:items-center sm:justify-between sm:gap-[16px]">
+                <dt>Contraseña</dt>
+                <dd className="font-medium text-[#241917]">{password.trim() || username.trim() || suggestedUsername || "-"}</dd>
               </div>
               <div className="flex flex-col gap-[4px] sm:flex-row sm:items-center sm:justify-between sm:gap-[16px]">
                 <dt>Estado</dt>

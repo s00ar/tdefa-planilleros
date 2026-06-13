@@ -22,6 +22,18 @@ Copy `.env.example` and set:
 
 For Hostinger you can start from `.env.hostinger.example`.
 
+## Manual production migration
+
+If production boots are not applying the latest schema changes, run
+`backend/sql/production-auth-migration.sql` against the production database.
+
+That script:
+
+- adds `role` and `password` to `planilleros`
+- backfills `password = username` for existing users
+- inserts the `admin/admin` demo admin if it does not exist
+- converts the table to `utf8mb4`
+
 ## Run locally
 
 ```bash
