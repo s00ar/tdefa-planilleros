@@ -4,14 +4,15 @@ Repositorio unificado con:
 
 - `frontend/`: aplicacion Vite del panel administrativo y la planilla.
 - `backend/`: API Node.js + MySQL.
-- `app.js`: entrypoint raiz para despliegue en Hostinger apuntando al backend.
+- `app.js`: entrypoint raiz de compatibilidad para despliegue en Hostinger apuntando al backend.
+- `index.js`: entrypoint raiz recomendado para despliegues que arrancan `index.js`.
 
 ## Hostinger
 
 El deploy Node.js de Hostinger puede seguir usando:
 
 - Root directory: `./`
-- Entry file: `app.js`
+- Entry file: `index.js` o `app.js`
 
 Variables necesarias en Hostinger:
 

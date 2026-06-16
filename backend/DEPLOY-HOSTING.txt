@@ -1,6 +1,7 @@
 Contenido del repo:
 
-- `index.js`: entrypoint listo para hosting Node.js
+- `../index.js`: entrypoint raiz recomendado para hosting Node.js
+- `../app.js`: entrypoint raiz de compatibilidad
 - `server/`: API Express + MySQL que atiende `/api`
 - `public/`: opcional, para subir el frontend compilado si quieres servirlo desde este repo
 - `package.json`: scripts de arranque, seed y tests
